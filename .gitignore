@@ -1,0 +1,32 @@
+# --- Secrets ---
+.env
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+venv/
+.venv/
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.spyproject/
+.DS_Store
+Thumbs.db
+~$*
+
+# --- Data and models (large or re-downloadable) ---
+# Raw PDFs are re-downloaded by the pipeline; only small sample data is committed.
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+models/*.joblib
+models/*.pkl
+
+# --- Logs ---
+*.log
+logs/

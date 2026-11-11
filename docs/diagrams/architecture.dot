@@ -1,0 +1,60 @@
+digraph G {
+  rankdir=LR; splines=spline; nodesep=0.35; ranksep=0.7; newrank=true;
+  graph [fontname="Arial", fontsize=13, pad=0.3];
+  node  [fontname="Arial", fontsize=11, shape=box, style="rounded,filled", penwidth=1.2, margin="0.15,0.08"];
+  edge  [fontname="Arial", fontsize=9, color="#404040", arrowsize=0.7];
+
+  subgraph cluster_src { label="1. External data sources"; style="rounded,filled"; fillcolor="#FFFBEA"; color="#BF9000";
+    idsp [label="IDSP Weekly Outbreak\nReports (NCDC, PDF)\nweekly, ~2-month lag", fillcolor="#FFF2CC", color="#BF9000"];
+    dist [label="District master list\n+ centroid coordinates", fillcolor="#FFF2CC", color="#BF9000"];
+    om   [label="Open-Meteo API\nhistorical + forecast\nweather (daily)", fillcolor="#FFF2CC", color="#BF9000"];
+  }
+
+  subgraph cluster_ing { label="2. Ingestion layer (Python)"; style="rounded,filled"; fillcolor="#F2F7FC"; color="#1F4E79";
+    dl   [label="Report discoverer\n& downloader", fillcolor="#DAE8FC", color="#1F4E79"];
+    pp   [label="PDF parser\n(pdfplumber)", fillcolor="#DAE8FC", color="#1F4E79"];
+    cl   [label="Cleaner &\ndistrict name matcher", fillcolor="#DAE8FC", color="#1F4E79"];
+    wf   [label="Weather fetcher\n& weekly aggregator", fillcolor="#DAE8FC", color="#1F4E79"];
+  }
+
+  db [label="3. PostgreSQL\n\noutbreaks · reports\ndistricts · states\nweather · predictions\nmodel versions", shape=cylinder, style=filled, fillcolor="#E1D5E7", color="#9673A6", fontsize=11, height=1.6];
+
+  subgraph cluster_ml { label="4. ML layer (Python)"; style="rounded,filled"; fillcolor="#F4FAF1"; color="#548235";
+    fb [label="Feature builder\nlagged weather, season,\noutbreak history", fillcolor="#E2F0D9", color="#548235"];
+    tr [label="Model trainer\n(offline, time-based\nvalidation)", fillcolor="#E2F0D9", color="#548235"];
+    mf [label="Trained model\n(joblib file)", shape=folder, style=filled, fillcolor="#E2F0D9", color="#548235"];
+    rp [label="Risk predictor\nnext 4 weeks", fillcolor="#E2F0D9", color="#548235"];
+  }
+
+  subgraph cluster_app { label="5. Flask application (single Python server)"; style="rounded,filled"; fillcolor="#FDF1F0"; color="#B85450";
+    api  [label="REST API\n/api/v1/...", fillcolor="#F8CECC", color="#B85450"];
+    dash [label="Dash dashboard\n/dashboard", fillcolor="#F8CECC", color="#B85450"];
+  }
+
+  subgraph cluster_usr { label="6. Users"; style="rounded,filled"; fillcolor="#F7F7F7"; color="#7F7F7F";
+    u1 [label="Surveillance officer\n(browser)", shape=ellipse, fillcolor="#EDEDED", color="#595959"];
+    u2 [label="Researcher\n(browser / API client)", shape=ellipse, fillcolor="#EDEDED", color="#595959"];
+  }
+
+  sch [label="Scheduler (APScheduler)\nweekly: ingest new IDSP report\ndaily: refresh weather, re-score risk", fillcolor="#EDEDED", color="#595959"];
+  ag  [label="AI agent (optional)\nnews signals / NL-to-SQL\nread-only, guardrailed", fillcolor="#EDEDED", color="#595959", style="rounded,filled,dashed"];
+
+  idsp -> dl -> pp -> cl;
+  dist -> cl;
+  om -> wf;
+  cl -> db [label="clean outbreak\nrecords"];
+  wf -> db [label="daily & weekly\nweather"];
+  db -> fb [label="history"];
+  fb -> tr -> mf -> rp;
+  fb -> rp;
+  db -> rp [dir=back, label="risk scores", color="#548235", fontcolor="#548235"];
+  db -> api [label="SQL queries", dir=both];
+  dash -> api [label="HTTP/JSON"];
+  dash -> u1 [dir=back];
+  api -> u2 [dir=back];
+  
+  api -> ag [style=dashed, color="#7F7F7F", dir=both];
+
+  {rank=same; dl; sch}
+
+}

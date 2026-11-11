@@ -1,0 +1,107 @@
+erDiagram
+  STATES ||--o{ DISTRICTS : contains
+  DISTRICTS ||--o{ DISTRICT_ALIASES : "known as"
+  DISTRICTS ||--o{ OUTBREAKS : reports
+  DISEASES ||--o{ OUTBREAKS : "is of"
+  REPORTS ||--o{ OUTBREAKS : lists
+  DISTRICTS ||--o{ WEATHER_DAILY : has
+  DISTRICTS ||--o{ PREDICTIONS : "scored for"
+  MODEL_VERSIONS ||--o{ PREDICTIONS : produces
+  DISTRICTS |o--o{ NEWS_SIGNALS : "mentioned in"
+
+  STATES {
+    int state_id PK
+    varchar state_name UK
+    varchar state_code UK
+  }
+  DISTRICTS {
+    int district_id PK
+    int state_id FK
+    varchar district_name
+    varchar lgd_code UK
+    numeric latitude
+    numeric longitude
+  }
+  DISTRICT_ALIASES {
+    int alias_id PK
+    int district_id FK
+    varchar alias_name UK
+  }
+  DISEASES {
+    int disease_id PK
+    varchar disease_name UK
+  }
+  REPORTS {
+    int report_id PK
+    smallint year
+    smallint week_no
+    date week_start
+    date week_end
+    text source_url UK
+    varchar file_hash
+    timestamp downloaded_at
+    varchar parse_status
+  }
+  OUTBREAKS {
+    bigint outbreak_id PK
+    int report_id FK
+    int district_id FK
+    int disease_id FK
+    varchar idsp_unique_id
+    int cases
+    int deaths
+    date start_date
+    date reporting_date
+    varchar current_status
+    text action_taken
+    boolean reported_late
+    boolean needs_review
+  }
+  WEATHER_DAILY {
+    int district_id PK,FK
+    date obs_date PK
+    numeric precip_mm
+    numeric temp_mean_c
+    numeric temp_min_c
+    numeric temp_max_c
+    numeric rel_humidity_pct
+    varchar data_type "observed or forecast"
+  }
+  MODEL_VERSIONS {
+    int model_id PK
+    varchar algorithm
+    varchar train_period
+    jsonb test_metrics
+    text file_path
+    timestamp trained_at
+    boolean is_active
+  }
+  PREDICTIONS {
+    bigint prediction_id PK
+    int model_id FK
+    int district_id FK
+    date target_week_start
+    smallint horizon_weeks
+    numeric risk_score
+    varchar risk_level
+    jsonb top_factors
+    timestamp created_at
+  }
+  NEWS_SIGNALS {
+    bigint signal_id PK
+    int district_id FK "nullable"
+    timestamp published_at
+    text headline
+    text url UK
+    int extracted_cases
+    varchar verification_status
+  }
+  PIPELINE_RUNS {
+    bigint run_id PK
+    varchar job_name
+    timestamp started_at
+    timestamp finished_at
+    varchar status
+    int rows_added
+    text message
+  }
