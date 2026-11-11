@@ -1,0 +1,318 @@
+state_name,alias,census_code,district_name,reason
+Andhra Pradesh,Kadapa,551,Y.s.r.,renamed
+Andhra Pradesh,YSR Kadapa,551,Y.s.r.,renamed
+Andhra Pradesh,Cuddapah,551,Y.s.r.,old name
+Andhra Pradesh,Nellore,550,Sri Potti Sriramulu Nellore,short name
+Andhra Pradesh,Ananthapuramu,553,Anantapur,spelling
+Andhra Pradesh,Vizag,544,Visakhapatnam,short name
+Andhra Pradesh,Tirupati,554,Chittoor,carved out 2022
+Andhra Pradesh,Annamayya,551,Y.s.r.,carved out 2022
+Andhra Pradesh,Kakinada,545,East Godavari,carved out 2022
+Andhra Pradesh,Konaseema,545,East Godavari,carved out 2022
+Andhra Pradesh,NTR,547,Krishna,carved out 2022
+Andhra Pradesh,Eluru,546,West Godavari,carved out 2022
+Andhra Pradesh,Bapatla,548,Guntur,carved out 2022
+Andhra Pradesh,Palnadu,548,Guntur,carved out 2022
+Andhra Pradesh,Nandyal,552,Kurnool,carved out 2022
+Andhra Pradesh,Sri Sathya Sai,553,Anantapur,carved out 2022
+Andhra Pradesh,Anakapalli,544,Visakhapatnam,carved out 2022
+Andhra Pradesh,Alluri Sitharama Raju,544,Visakhapatnam,carved out 2022
+Andhra Pradesh,Parvathipuram Manyam,543,Vizianagaram,carved out 2022
+Arunachal Pradesh,Lower Siang,250,West Siang,carved out 2017
+Arunachal Pradesh,Namsai,259,Lohit,carved out 2014
+Arunachal Pradesh,Kra Daadi,256,Kurung Kumey,carved out 2015
+Arunachal Pradesh,Siang,251,East Siang,carved out 2015
+Arunachal Pradesh,Kamle,255,Lower Subansiri,carved out 2017
+Arunachal Pradesh,Pakke Kessang,247,East Kameng,carved out 2018
+Arunachal Pradesh,Lepa Rada,250,West Siang,carved out 2018
+Arunachal Pradesh,Shi Yomi,250,West Siang,carved out 2018
+Arunachal Pradesh,Longding,254,Tirap,carved out 2012
+Arunachal Pradesh,Itanagar,248,Papum Pare,capital city
+Arunachal Pradesh,Capital Complex,248,Papum Pare,capital city
+Assam,Kamrup Metro,322,Kamrup Metropolitan,short name
+Assam,Charaideo,311,Sivasagar,carved out 2015
+Assam,Hojai,305,Nagaon,carved out 2015
+Assam,Biswanath,306,Sonitpur,carved out 2015
+Assam,Majuli,312,Jorhat,carved out 2016
+Assam,South Salmara,301,Dhubri,carved out 2016
+Assam,West Karbi Anglong,314,Karbi Anglong,carved out 2016
+Assam,Bajali,303,Barpeta,carved out 2020
+Assam,Tamulpur,324,Baksa,carved out 2022
+Assam,Morigaon,304,Marigaon,spelling
+Assam,Guwahati,322,Kamrup Metropolitan,city
+Bihar,Bhabhua,233,Kaimur (bhabua),alternative name
+Bihar,Kaimur,233,Kaimur (bhabua),short name
+Bihar,Purnea,211,Purnia,spelling
+Bihar,East Champaran,204,Purba Champaran,English name
+Bihar,Motihari,204,Purba Champaran,headquarters
+Bihar,West Champaran,203,Pashchim Champaran,English name
+Bihar,Bettiah,203,Pashchim Champaran,headquarters
+Bihar,Chhapra,219,Saran (chhapra),headquarters
+Chhattisgarh,Baster,414,Bastar,spelling
+Chhattisgarh,Sukma,416,Dakshin Bastar Dantewada,carved out 2012
+Chhattisgarh,Dantewada,416,Dakshin Bastar Dantewada,short name
+Chhattisgarh,Kondagaon,414,Bastar,carved out 2012
+Chhattisgarh,Kanker,413,Uttar Bastar Kanker,short name
+Chhattisgarh,Kawardha,407,Kabeerdham,alternative name
+Chhattisgarh,Kabirdham,407,Kabeerdham,spelling
+Chhattisgarh,Balod,409,Durg,carved out 2012
+Chhattisgarh,Bemetara,409,Durg,carved out 2012
+Chhattisgarh,Baloda Bazar,410,Raipur,carved out 2012
+Chhattisgarh,Gariaband,410,Raipur,carved out 2012
+Chhattisgarh,Mungeli,406,Bilaspur,carved out 2012
+Chhattisgarh,Surajpur,401,Surguja,carved out 2012
+Chhattisgarh,Balrampur,401,Surguja,carved out 2012
+Chhattisgarh,Korea,400,Koriya,spelling
+Delhi,South Delhi,98,South,naming
+Delhi,North Delhi,91,North,naming
+Delhi,East Delhi,93,East,naming
+Delhi,West Delhi,96,West,naming
+Delhi,Central Delhi,95,Central,naming
+Delhi,Shahdara,93,East,carved out 2012
+Delhi,South East,98,South,carved out 2012
+Gujarat,Gir Somnath,479,Junagadh,carved out 2013
+Gujarat,Ahmedabad,474,Ahmadabad,spelling
+Gujarat,Dahod,485,Dohad,spelling
+Gujarat,Banaskantha,469,Banas Kantha,spelling
+Gujarat,Sabarkantha,472,Sabar Kantha,spelling
+Gujarat,Panchmahal,484,Panch Mahals,spelling
+Gujarat,Mehsana,471,Mahesana,spelling
+Gujarat,Kutch,468,Kachchh,English name
+Gujarat,Aravalli,472,Sabar Kantha,carved out 2013
+Gujarat,Botad,481,Bhavnagar,carved out 2013
+Gujarat,Morbi,476,Rajkot,carved out 2013
+Gujarat,Devbhumi Dwarka,477,Jamnagar,carved out 2013
+Gujarat,Chhota Udaipur,486,Vadodara,carved out 2013
+Gujarat,Mahisagar,484,Panch Mahals,carved out 2013
+Gujarat,Dang,489,The Dangs,short name
+Haryana,Nuh,87,Mewat,renamed 2016
+Haryana,Gurugram,86,Gurgaon,renamed 2016
+Haryana,Charkhi Dadri,81,Bhiwani,carved out 2016
+Jharkhand,East Singhbhum,357,Purbi Singhbhum,English name
+Jharkhand,East Singhbum,357,Purbi Singhbhum,English name
+Jharkhand,West Singhbhum,368,Pashchimi Singhbhum,English name
+Jharkhand,Jamshedpur,357,Purbi Singhbhum,city
+Jharkhand,Koderma,348,Kodarma,spelling
+Jharkhand,Saraikela,369,Saraikela-kharsawan,short name
+Karnataka,Belagavi,555,Belgaum,renamed 2014
+Karnataka,Ballari,565,Bellary,renamed 2014
+Karnataka,Kalaburagi,579,Gulbarga,renamed 2014
+Karnataka,Vijayapura,557,Bijapur,renamed 2014
+Karnataka,Vijayapur,557,Bijapur,renamed 2014
+Karnataka,Mysuru,577,Mysore,renamed 2014
+Karnataka,Bengaluru Urban,572,Bangalore,renamed 2014
+Karnataka,Bangalore Urban,572,Bangalore,official name
+Karnataka,Bengaluru,572,Bangalore,renamed 2014
+Karnataka,Bangaluru,572,Bangalore,spelling
+Karnataka,BBMP,572,Bangalore,city corporation
+Karnataka,Bengaluru Rural,583,Bangalore Rural,renamed 2014
+Karnataka,Shivamogga,568,Shimoga,renamed 2014
+Karnataka,Tumakuru,571,Tumkur,renamed 2014
+Karnataka,Chamarajanagar,578,Chamrajnagar,spelling
+Karnataka,Chamarajanagara,578,Chamrajnagar,spelling
+Karnataka,Davangere,567,Davanagere,spelling
+Karnataka,Chikkamagaluru,570,Chikmagalur,renamed 2014
+Karnataka,Chikballapur,582,Chikkaballapura,spelling
+Karnataka,Vijayanagara,565,Bellary,carved out 2021
+Karnataka,Jewargi,579,Gulbarga,taluk of Gulbarga
+Karnataka,Mangaluru,575,Dakshina Kannada,city
+Karnataka,Mangalore,575,Dakshina Kannada,city
+Kerala,Trivandrum,601,Thiruvananthapuram,old name
+Kerala,Cannanore,589,Kannur,old name
+Kerala,Calicut,591,Kozhikode,old name
+Kerala,Quilon,600,Kollam,old name
+Kerala,Alleppey,598,Alappuzha,old name
+Kerala,Trichur,594,Thrissur,old name
+Kerala,Palghat,593,Palakkad,old name
+Kerala,Kasargod,588,Kasaragod,spelling
+Madhya Pradesh,Narsinghpur,452,Narsimhapur,spelling
+Madhya Pradesh,Khandwa,466,East Nimar,headquarters
+Madhya Pradesh,Khargone,440,West Nimar,headquarters
+Madhya Pradesh,Khargon,440,West Nimar,headquarters
+Madhya Pradesh,Nimach,432,Neemuch,spelling
+Madhya Pradesh,Agar Malwa,436,Shajapur,carved out 2013
+Madhya Pradesh,Niwari,424,Tikamgarh,carved out 2018
+Madhya Pradesh,Narmadapuram,449,Hoshangabad,renamed 2022
+Madhya Pradesh,Mauganj,430,Rewa,carved out 2023
+Madhya Pradesh,Maihar,429,Satna,carved out 2023
+Madhya Pradesh,Pandhurna,455,Chhindwara,carved out 2023
+Maharashtra,Beed,523,Bid,spelling
+Maharashtra,Raigad,520,Raigarh,official spelling differs in Census map
+Maharashtra,Palghar,517,Thane,carved out 2014
+Maharashtra,Palaghar,517,Thane,carved out 2014
+Maharashtra,Dharashiv,525,Osmanabad,renamed 2023
+Maharashtra,Chhatrapati Sambhajinagar,515,Aurangabad,renamed 2023
+Maharashtra,Gadchiroli,508,Garhchiroli,spelling
+Maharashtra,Ghadchiroli,508,Garhchiroli,spelling
+Maharashtra,Ahmednagar,522,Ahmadnagar,spelling
+Maharashtra,Ahilyanagar,522,Ahmadnagar,renamed 2024
+Maharashtra,Gondia,507,Gondiya,spelling
+Maharashtra,Buldhana,500,Buldana,spelling
+Maharashtra,Karad,527,Satara,town in Satara
+Maharashtra,Mumbai City,519,Mumbai,official name
+Maharashtra,Navi Mumbai,517,Thane,city in Thane
+Maharashtra,Pimpri Chinchwad,521,Pune,city in Pune
+Maharashtra,Vasai Virar,517,Thane,city (now Palghar)
+Maharashtra,Kalyan Dombivli,517,Thane,city in Thane
+Manipur,Kakching,276,Thoubal,carved out 2016
+Manipur,Jiribam,278,Imphal East,carved out 2016
+Manipur,Kangpokpi,272,Senapati,carved out 2016
+Manipur,Tengnoupal,280,Chandel,carved out 2016
+Manipur,Pherzawl,274,Churachandpur,carved out 2016
+Manipur,Noney,273,Tamenglong,carved out 2016
+Manipur,Kamjong,279,Ukhrul,carved out 2016
+Meghalaya,West Jaintia Hills,299,Jaintia Hills,carved out 2012
+Meghalaya,East Jaintia Hills,299,Jaintia Hills,carved out 2012
+Meghalaya,South West Khasi Hills,296,West Khasi Hills,carved out 2012
+Meghalaya,Eastern West Khasi Hills,296,West Khasi Hills,carved out 2021
+Meghalaya,North Garo Hills,294,East Garo Hills,carved out 2012
+Meghalaya,South West Garo Hills,293,West Garo Hills,carved out 2012
+Mizoram,Aizwal,283,Aizawl,spelling
+Mizoram,Aizwal West,283,Aizawl,surveillance sub-unit
+Mizoram,Aizwal East,283,Aizawl,surveillance sub-unit
+Mizoram,Aizawl East,283,Aizawl,surveillance sub-unit
+Mizoram,Aizawl West,283,Aizawl,surveillance sub-unit
+Mizoram,Lawngtlai,287,Lawangtlai,spelling
+Nagaland,Chumoukedima,265,Dimapur,carved out 2021
+Nagaland,Niuland,265,Dimapur,carved out 2021
+Odisha,Balasore,377,Baleshwar,English name
+Odisha,Baleswar,377,Baleshwar,spelling
+Odisha,Angul,384,Anugul,spelling
+Odisha,Bolangir,393,Balangir,spelling
+Odisha,Boudh,391,Bauda,spelling
+Odisha,Deogarh,373,Debagarh,spelling
+Odisha,Jajpur,382,Jajapur,spelling
+Odisha,Keonjhar,375,Kendujhar,spelling
+Odisha,Khurda,386,Khordha,spelling
+Odisha,Nabarangpur,397,Nabarangapur,spelling
+Odisha,Sonepur,392,Subarnapur,old name
+Puducherry,Pondicherry,635,Puducherry,old name
+Punjab,Shri Muktsar Sahib,44,Muktsar,official name
+Punjab,Sri Muktsar Sahib,44,Muktsar,official name
+Punjab,Mohali,52,Sahibzada Ajit Singh Nagar,city
+Punjab,SAS Nagar,52,Sahibzada Ajit Singh Nagar,short name
+Punjab,Nawanshahr,39,Shahid Bhagat Singh Nagar,old name
+Punjab,SBS Nagar,39,Shahid Bhagat Singh Nagar,short name
+Punjab,Ferozepur,43,Firozpur,spelling
+Punjab,Ropar,51,Rupnagar,old name
+Punjab,Fazilka,43,Firozpur,carved out 2011
+Punjab,Pathankot,35,Gurdaspur,carved out 2011
+Punjab,Malerkotla,53,Sangrur,carved out 2021
+Rajasthan,Dholpur,106,Dhaulpur,spelling
+Rajasthan,Sri Ganganagar,99,Ganganagar,official name
+Rajasthan,Chittorgarh,126,Chittaurgarh,spelling
+Rajasthan,Jhunjhunu,103,Jhunjhunun,spelling
+Rajasthan,Jalore,116,Jalor,spelling
+Sikkim,East Sikkim,244,East,naming
+Sikkim,South Sikkim,243,South,naming
+Sikkim,West Sikkim,242,West,naming
+Sikkim,North Sikkim,241,North,naming
+Sikkim,Gangtok,244,East,headquarters
+Sikkim,East Singtam Gangtok,244,East,towns in East Sikkim
+Sikkim,Namchi,243,South,headquarters
+Tamil Nadu,Tenkasi,628,Tirunelveli,carved out 2019
+Tamil Nadu,Virudhunagar,625,Virudunagar,spelling
+Tamil Nadu,Trichy,614,Tiruchirappalli,short name
+Tamil Nadu,Tiruchirapalli,614,Tiruchirappalli,spelling
+Tamil Nadu,Tuticorin,627,Thoothukkudi,old name
+Tamil Nadu,Thoothukudi,627,Thoothukkudi,spelling
+Tamil Nadu,Pudukottai,621,Pudukkottai,spelling
+Tamil Nadu,Nagercoil,629,Kanniyakumari,headquarters
+Tamil Nadu,Nagerkoil,629,Kanniyakumari,headquarters
+Tamil Nadu,Kanyakumari,629,Kanniyakumari,spelling
+Tamil Nadu,Tirupathur,605,Vellore,carved out 2019
+Tamil Nadu,Tirupattur,605,Vellore,carved out 2019
+Tamil Nadu,Ranipet,605,Vellore,carved out 2019
+Tamil Nadu,Kallakurichi,607,Viluppuram,carved out 2019
+Tamil Nadu,Villupuram,607,Viluppuram,spelling
+Tamil Nadu,Chengalpattu,604,Kancheepuram,carved out 2019
+Tamil Nadu,Kanchipuram,604,Kancheepuram,spelling
+Tamil Nadu,Mayiladuthurai,618,Nagappattinam,carved out 2020
+Tamil Nadu,Nagapattinam,618,Nagappattinam,spelling
+Tamil Nadu,Tiruvallur,602,Thiruvallur,spelling
+Tamil Nadu,Tiruvarur,619,Thiruvarur,spelling
+Tamil Nadu,Nilgiris,611,The Nilgiris,short name
+Tamil Nadu,Tirupur,633,Tiruppur,spelling
+Tamil Nadu,Thirunelveli,628,Tirunelveli,spelling
+Tamil Nadu,Tiruneveli,628,Tirunelveli,spelling
+Telangana,Mahaboobnagar,538,Mahbubnagar,spelling
+Telangana,Mahabubnagar,538,Mahbubnagar,spelling
+Telangana,Wanaparthy,538,Mahbubnagar,carved out 2016
+Telangana,Nagarkurnool,538,Mahbubnagar,carved out 2016
+Telangana,Jogulamba Gadwal,538,Mahbubnagar,carved out 2016
+Telangana,Narayanpet,538,Mahbubnagar,carved out 2019
+Telangana,Suryapet,539,Nalgonda,carved out 2016
+Telangana,Yadadri Bhuvanagiri,539,Nalgonda,carved out 2016
+Telangana,Rajanna Sircilla,534,Karimnagar,carved out 2016
+Telangana,Ranjana Sirchilla,534,Karimnagar,carved out 2016
+Telangana,Jagtial,534,Karimnagar,carved out 2016
+Telangana,Peddapalli,534,Karimnagar,carved out 2016
+Telangana,Bhadradri Kothagudem,541,Khammam,carved out 2016
+Telangana,Siddipet,535,Medak,carved out 2016
+Telangana,Sangareddy,535,Medak,carved out 2016
+Telangana,Kamareddy,533,Nizamabad,carved out 2016
+Telangana,Nirmal,532,Adilabad,carved out 2016
+Telangana,Mancherial,532,Adilabad,carved out 2016
+Telangana,Kumuram Bheem Asifabad,532,Adilabad,carved out 2016
+Telangana,Medchal,537,Rangareddy,carved out 2016
+Telangana,Medchal Malkajgiri,537,Rangareddy,carved out 2016
+Telangana,Vikarabad,537,Rangareddy,carved out 2016
+Telangana,Ranga Reddy,537,Rangareddy,spelling
+Telangana,Jangaon,540,Warangal,carved out 2016
+Telangana,Hanamkonda,540,Warangal,carved out 2016
+Telangana,Warangal Urban,540,Warangal,carved out 2016
+Telangana,Warangal Rural,540,Warangal,carved out 2016
+Telangana,Mahabubabad,540,Warangal,carved out 2016
+Telangana,Jayashankar Bhupalpally,540,Warangal,carved out 2016
+Telangana,Mulugu,540,Warangal,carved out 2019
+Tripura,Sepahijala,289,West Tripura,carved out 2012
+Tripura,Sepahijaj,289,West Tripura,carved out 2012
+Tripura,Gomati,290,South Tripura,carved out 2012
+Tripura,Khowai,289,West Tripura,carved out 2012
+Tripura,Unakoti,292,North Tripura,carved out 2012
+Uttar Pradesh,Prayagraj,175,Allahabad,renamed 2018
+Uttar Pradesh,Ayodhya,177,Faizabad,renamed 2018
+Uttar Pradesh,Hapur,140,Ghaziabad,carved out 2011
+Uttar Pradesh,Shamli,133,Muzaffarnagar,carved out 2011
+Uttar Pradesh,Sambhal,135,Moradabad,carved out 2011
+Uttar Pradesh,Amroha,137,Jyotiba Phule Nagar,renamed
+Uttar Pradesh,Bhadohi,198,Sant Ravi Das Nagar(bhadohi),short name
+Uttar Pradesh,Sant Ravidas Nagar,198,Sant Ravi Das Nagar(bhadohi),spelling
+Uttar Pradesh,Badaun,149,Budaun,spelling
+Uttar Pradesh,Kanpur,164,Kanpur Nagar,city district
+Uttar Pradesh,Orraiya,162,Auraiya,spelling
+Uttar Pradesh,Lakhimpur Kheri,153,Kheri,full name
+Uttar Pradesh,Barabanki,176,Bara Banki,spelling
+Uttar Pradesh,Raebareli,158,Rae Bareli,spelling
+Uttar Pradesh,Noida,141,Gautam Buddha Nagar,city
+Uttar Pradesh,Gautam Budh Nagar,141,Gautam Buddha Nagar,spelling
+Uttar Pradesh,Hathras,144,Mahamaya Nagar,renamed
+Uttar Pradesh,Kasganj,202,Kansiram Nagar,renamed
+Uttar Pradesh,Siddharthnagar,184,Siddharth Nagar,spelling
+Uttar Pradesh,Shravasti,181,Shrawasti,spelling
+Uttarakhand,Pauri Garhwal,61,Garhwal,full name
+Uttarakhand,Pauri,61,Garhwal,headquarters
+Uttarakhand,Tehri,59,Tehri Garhwal,short name
+Uttarakhand,Haridwar,68,Hardwar,spelling
+Uttarakhand,US Nagar,67,Udham Singh Nagar,short name
+West Bengal,Hooghly,338,Hugli,English spelling
+West Bengal,Burdwan,335,Barddhaman,English name
+West Bengal,Bardhaman,335,Barddhaman,spelling
+West Bengal,Purba Bardhaman,335,Barddhaman,carved out 2017
+West Bengal,Paschim Bardhaman,335,Barddhaman,carved out 2017
+West Bengal,Howrah,341,Haora,English spelling
+West Bengal,Cooch Behar,329,Koch Bihar,English spelling
+West Bengal,Coochbehar,329,Koch Bihar,English spelling
+West Bengal,Darjeeling,327,Darjiling,English spelling
+West Bengal,Malda,332,Maldah,spelling
+West Bengal,Pachim,344,Pashchim Medinipur,truncated in report
+West Bengal,Paschim Medinipur,344,Pashchim Medinipur,spelling
+West Bengal,West Midnapore,344,Pashchim Medinipur,English name
+West Bengal,East Midnapore,345,Purba Medinipur,English name
+West Bengal,Purulia,340,Puruliya,spelling
+West Bengal,Alipurduar,328,Jalpaiguri,carved out 2014
+West Bengal,Kalimpong,327,Darjiling,carved out 2017
+West Bengal,Jhargram,344,Pashchim Medinipur,carved out 2017
+West Bengal,South Dinajpur,331,Dakshin Dinajpur,English name
+West Bengal,North Dinajpur,330,Uttar Dinajpur,English name
+Assam,Kamrup M,322,Kamrup Metropolitan,short name

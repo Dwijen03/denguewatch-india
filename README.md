@@ -17,8 +17,8 @@ India publishes dengue outbreak information every week through the Integrated Di
 | 1 | Problem definition | Done |
 | 2 | Requirements & system design | Done |
 | 3 | Project setup | Done |
-| 4 | Data acquisition & cleaning | Next |
-| 5 | Database implementation | Planned |
+| 4 | Data acquisition & cleaning | Done |
+| 5 | Database implementation | Next |
 | 6 | Weather data integration | Planned |
 | 7 | AI/ML early-warning model | Planned |
 | 8 | Flask REST API | Planned |
@@ -68,6 +68,7 @@ denguewatch-india/
 │   └── scheduler/          # Automated jobs
 ├── database/               # SQL schema and query scripts
 ├── data/
+│   ├── reference/          # Census 2011 district list + name aliases
 │   ├── raw/                # Downloaded PDFs (not committed)
 │   ├── processed/          # Intermediate files (not committed)
 │   └── sample/             # Small sample data (committed)
@@ -147,10 +148,37 @@ Then open <http://localhost:8050>. The health check is at <http://localhost:8050
 
 ---
 
+## Data pipeline (Step 4)
+
+```bash
+python scripts/run_ingestion.py            # or double-click run_data_pipeline.bat
+python scripts/run_ingestion.py --no-download   # re-parse PDFs already downloaded
+```
+
+1. **Download**: finds every weekly report on the NCDC Weekly Outbreaks page and downloads new ones to `data/raw/`.
+2. **Parse**: reads the outbreak tables in each PDF with pdfplumber and keeps dengue rows. It handles the three layouts used since 2009, merged state/district cells, and `cases / deaths` written in one cell.
+3. **Clean**: standardises states, dates (`13.08.10`, `14-07- 2026`, ...), numbers and status, and flags suspected or mixed outbreaks (e.g. "Dengue & Chikungunya").
+4. **Match districts** to the 640 Census 2011 districts (`data/reference/districts.csv`), in this order: exact name, then curated aliases for renamed or newer districts (`data/reference/district_aliases.csv`, 317 entries), then fuzzy match, then the IDSP unique ID.
+5. **De-duplicate**: an outbreak listed again in later weeks is kept once (district + start date).
+6. **Validate**: rows with missing cases, invalid dates or unmatched districts get `needs_review = True` and a `review_reasons` explanation.
+
+**Result (run of 11 Nov 2026):** 891 reports parsed (2009 to week 37 of 2026), giving **2,224 dengue outbreaks**, about **1.2 lakh cases**, across **353 districts**. 98.6% of outbreaks were matched to a district, 9 are state-wide, and 64 rows (2.9%) are flagged for review. The full table is in [`data/sample/dengue_outbreaks.csv`](data/sample/dengue_outbreaks.csv).
+
+| Output (data/processed/) | Contents |
+|---|---|
+| `reports_index.csv` | Every report: year, week, URL, file fingerprint, dengue rows found |
+| `dengue_rows_raw.csv` | Rows exactly as read from the PDFs |
+| `dengue_rows_clean.csv` | Cleaned and matched rows with flags |
+| `dengue_outbreaks.csv` | **One row per outbreak** (main output) |
+| `unmatched_districts.csv` | District names still needing an alias |
+
+---
+
 ## Data sources
 
 - **IDSP Weekly Outbreak Reports**, National Centre for Disease Control (NCDC): <https://ncdc.mohfw.gov.in/includes/WeeklyOutbreaks.php>
 - **Open-Meteo** historical and forecast weather API (free for non-commercial use): <https://open-meteo.com/>
+- **District boundaries**: DataMeet, *India - District Map* (Census 2011), CC BY 2.5 India: <https://github.com/datameet/maps>. Used to build `data/reference/districts.csv` with district centroids.
 
 ---
 
