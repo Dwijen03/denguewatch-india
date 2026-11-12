@@ -20,8 +20,8 @@ India publishes dengue outbreak information every week through the Integrated Di
 | 4 | Data acquisition & cleaning | Done |
 | 5 | Database implementation | Done |
 | 6 | Weather data integration | Done |
-| 7 | AI/ML early-warning model | Next |
-| 8 | Flask REST API | Planned |
+| 7 | AI/ML early-warning model | Done |
+| 8 | Flask REST API | Next |
 | 9 | Dashboard | Planned |
 | 10 | Automation (scheduled updates) | Planned |
 | 11 | AI agent (optional) | Planned |
@@ -217,6 +217,44 @@ python scripts/update_weather.py --no-history # quick daily refresh: recent days
 - The job can be resumed: it only downloads days that are still missing.
 - The first full run takes about 30–60 minutes and stores about 4.2 million rows (≈0.5 GB). After that, each run takes about a minute.
 - `v_weather_weekly` gives weekly totals, and the query `rainfall_before_outbreaks` links weather to outbreaks.
+
+---
+
+## Early-warning model (Step 7)
+
+```bash
+python scripts/train_model.py                  # or double-click train_model.bat
+python scripts/train_model.py --predict-only   # refresh risk scores with the active model
+```
+
+**Question the model answers:** will this district report a dengue outbreak in the next 4 weeks?
+
+**Inputs:** 23 features per district-week:
+
+- weather over the last 1–16 weeks: rainfall, minimum, mean and maximum temperature, humidity
+- season
+- location
+- outbreak history, counting only outbreaks that would already have been published, since reports appear about 8 weeks late
+
+**Model:** LightGBM, tested on years it never saw (2023 – Jul 2026):
+
+| Model | PR AUC | vs chance |
+|---|---|---|
+| **DengueWatch (LightGBM, all features)** | **0.169** | **10.0×** |
+| Logistic regression | 0.165 | 9.8× |
+| LightGBM without weather | 0.138 | 8.2× |
+| Seasonal history rule | 0.118 | 7.0× |
+| LightGBM, weather only | 0.052 | 3.1× |
+
+**Alert performance:**
+
+- **High alerts** cover 6% of district-weeks and catch 44.5% of outbreaks (7.4× chance).
+- **Medium + high alerts** catch 72.7% of outbreaks.
+- **Lead time:** 79% of outbreaks were flagged at least 2 weeks before they started.
+
+**What matters most:** the minimum temperature over the last 4 weeks is the strongest signal. Weather carries 56% of the model's influence. Each stored prediction includes its top 3 reasons (SHAP).
+
+Charts are in [`docs/figures/`](docs/figures/). Trained models are saved to `models/` and registered in `model_versions`, and scores are written to `predictions`.
 
 ---
 

@@ -1,0 +1,110 @@
+{
+  "test_period": "2023-01-01 to 2026-07-27",
+  "train_period": "2010-01-04 to 2026-07-27 (excluding 2020)",
+  "rows": {
+    "train": 400640,
+    "validation": 33280,
+    "test": 119680
+  },
+  "test_base_rate": 0.01685327540106952,
+  "test_pr_auc": 0.17585179119034858,
+  "test_roc_auc": 0.869228392334197,
+  "test_brier": 0.029783578093978223,
+  "pr_auc_by_year": {
+    "2023": 0.21746049682504262,
+    "2024": 0.12797778802772716,
+    "2025": 0.16337725527069857,
+    "2026": 0.3490819147695721
+  },
+  "thresholds": {
+    "high": 0.3425106041202141,
+    "medium": 0.1557761469725946
+  },
+  "high_alert": {
+    "alert_rate": 0.061004344919786097,
+    "precision": 0.12395562251746337,
+    "recall": 0.44868616757560736,
+    "lift": 7.354987061422913
+  },
+  "medium_or_high_alert": {
+    "alert_rate": 0.18155080213903743,
+    "precision": 0.0665960972017673,
+    "recall": 0.7174020823004462,
+    "lift": 3.9515225151747697
+  },
+  "seasonal_baseline_same_alert_volume": {
+    "alert_rate": 0.061004344919786097,
+    "precision": 0.1135460895767703,
+    "recall": 0.4110064452156668,
+    "lift": 6.737330689413916
+  },
+  "outbreak_weeks_in_test": 590,
+  "warned": {
+    "high_1plus_weeks": 0.5661016949152542,
+    "high_2plus_weeks": 0.5406779661016949,
+    "high_3plus_weeks": 0.5169491525423728,
+    "high_4plus_weeks": 0.4745762711864407,
+    "medium_or_high_1plus_weeks": 0.8016949152542373,
+    "medium_or_high_2plus_weeks": 0.7745762711864407,
+    "medium_or_high_3plus_weeks": 0.7491525423728813,
+    "medium_or_high_4plus_weeks": 0.7271186440677966
+  },
+  "comparison": [
+    {
+      "model": "Seasonal history baseline",
+      "pr_auc": 0.11818879368651537,
+      "roc_auc": 0.7954131066256882
+    },
+    {
+      "model": "Logistic regression (all features)",
+      "pr_auc": 0.16460516594049474,
+      "roc_auc": 0.8673766925702043
+    },
+    {
+      "model": "LightGBM, weather only",
+      "pr_auc": 0.053024742273128304,
+      "roc_auc": 0.7840929544626772
+    },
+    {
+      "model": "LightGBM, no weather (history + season + location)",
+      "pr_auc": 0.13838377707009045,
+      "roc_auc": 0.8523295804871092
+    },
+    {
+      "model": "DengueWatch model (LightGBM, all features)",
+      "pr_auc": 0.17585179119034858,
+      "roc_auc": 0.869228392334197
+    }
+  ],
+  "feature_importance": {
+    "tmin_w1_4": 0.7669416520822626,
+    "hist_district_years": 0.30441358108981287,
+    "longitude": 0.25457937618633286,
+    "hist_state_1y": 0.24662845085524418,
+    "latitude": 0.24560928927651968,
+    "rainy_weeks_w1_8": 0.14152003398054352,
+    "temp_w5_8": 0.13333762082688505,
+    "hist_district_1y": 0.12792126504950763,
+    "hum_w1_4": 0.12606551344434014,
+    "temp_w1_4": 0.12072509220524053,
+    "rain_w9_12": 0.1092667321552327,
+    "temp_w9_12": 0.10702428922111903,
+    "rain_w1_4": 0.10231329357237191,
+    "hist_district_season": 0.10227479548037315,
+    "hist_state_recent": 0.09820067045408043,
+    "rain_w5_8": 0.09752457054574501,
+    "woy_sin": 0.0965369216196686,
+    "tmax_w1_4": 0.09317343642009208,
+    "hum_w9_12": 0.07341308073673945,
+    "rain_w13_16": 0.05508659424433517,
+    "woy_cos": 0.053991305891514796,
+    "month": 0.03156186668032923,
+    "hum_w5_8": 0.021883951684222917
+  },
+  "importance_by_group": {
+    "weather": 0.5550653941871517,
+    "season": 0.0518776175012145,
+    "location": 0.14250416191247317,
+    "history": 0.2505528263991606
+  }
+}
