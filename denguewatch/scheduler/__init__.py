@@ -1,1 +1,1 @@
-"""Scheduled jobs: weekly report ingestion and daily weather + risk refresh (Step 10)."""
+"""Step 10: automatic updates - jobs (what runs) and runner (when it runs)."""

@@ -16,7 +16,7 @@ import json
 import logging
 import re
 import threading
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 import pandas as pd
 from flask import Blueprint, Response, current_app, jsonify, request
@@ -129,6 +129,9 @@ def _http_error(err: HTTPException):
 
 @api.errorhandler(Exception)
 def _unexpected(err: Exception):
+    from sqlalchemy.exc import OperationalError
+    if isinstance(err, OperationalError) or "DATABASE_URL is not set" in str(err):
+        return jsonify({"error": {"status": 503, "message": "Database not available - check .env and PostgreSQL"}}), 503
     log.exception("API error")
     return jsonify({"error": {"status": 500, "message": "Internal error - see server log"}}), 500
 
@@ -393,16 +396,40 @@ def _job_weather(history: bool):
     update_weather(history=history, recent=True)
 
 
+def _scheduled(name: str):
+    from denguewatch.scheduler.jobs import run_job
+    return lambda: run_job(name)
+
+
 JOBS = {
     "predict": _job_predict,
     "weather": lambda: _job_weather(True),
     "weather_recent": lambda: _job_weather(False),
+    "daily": _scheduled("daily_update"),        # Step 10 jobs
+    "reports": _scheduled("weekly_reports"),
+    "retrain": _scheduled("monthly_retrain"),
 }
+
+
+@api.get("/schedule")
+def schedule():
+    """Automatic updates (Step 10): last successful run, whether overdue, and next planned run."""
+    from denguewatch.scheduler.jobs import MAX_AGE, last_success
+    from denguewatch.scheduler.runner import next_runs
+    last = last_success()
+    nxt = {r["job"]: r["next_run"] for r in next_runs()}
+    now = datetime.now(timezone.utc)
+    out = [{"job": job,
+            "last_success": last[job].isoformat(timespec="minutes") if last[job] else None,
+            "overdue": last[job] is None or now - last[job] > age,
+            "next_run": nxt.get(job)} for job, age in MAX_AGE.items()]
+    return jsonify({"scheduler_running": bool(nxt), "results": out})
 
 
 @api.post("/admin/refresh")
 def admin_refresh():
-    """Start a background job (?job=predict|weather|weather_recent). Needs header X-Admin-Token."""
+    """Start a background job (?job=predict|weather|weather_recent|daily|reports|retrain).
+    Needs header X-Admin-Token."""
     token = request.headers.get("X-Admin-Token", "")
     if not config.ADMIN_TOKEN or token != config.ADMIN_TOKEN:
         raise ApiError(401, "Missing or wrong X-Admin-Token header")

@@ -51,6 +51,16 @@ COMMON_NAMES = {
 }
 
 
+def ist(ts: str | None) -> str:
+    """ISO timestamp (any time zone) -> 'YYYY-MM-DD HH:MM' in India time."""
+    if not ts:
+        return "–"
+    t = pd.Timestamp(ts)
+    if t.tzinfo is None:
+        t = t.tz_localize("UTC")
+    return t.tz_convert("Asia/Kolkata").strftime("%Y-%m-%d %H:%M")
+
+
 def nice(district: str, state: str) -> str:
     common = COMMON_NAMES.get((state, district))
     return f"{common} ({district})" if common else district
@@ -121,7 +131,8 @@ def create_dashboard(server: Flask) -> Dash:
             html.Div(className="freshness", children=[
                 html.Div(f"Latest IDSP outbreak report: {report} (ending {d.get('latest_report_week_end', '–')})"),
                 html.Div(f"Weather observed up to {d.get('latest_weather_date', '–')} · forecast 16 days ahead"),
-                html.Div("Decision support only - not an official alert"),
+                html.Div(f"Last automatic update: {ist(d.get('last_successful_run'))} IST"
+                         " · decision support only, not an official alert"),
             ]),
         ])
 
@@ -287,6 +298,19 @@ def create_dashboard(server: Flask) -> Dash:
         lead.update_yaxes(range=[0, 100])
         h, mh = ev["high_alert"], ev["medium_or_high_alert"]
         runs = (api("/pipeline-runs", limit=8) or {}).get("results", [])
+        sched = api("/schedule") or {}
+        labels = {"daily_update": "Weather + risk (daily)", "weekly_reports": "New IDSP reports (weekly)",
+                  "monthly_retrain": "Retrain model (monthly)"}
+
+        when = ist
+        auto = [html.Li([html.B(labels.get(r["job"], r["job"])), f" · last {when(r['last_success'])}",
+                         html.Span(" · overdue", style={"color": "#8f2020"}) if r["overdue"] else "",
+                         f" · next {when(r['next_run'])}" if r["next_run"] else ""])
+                for r in sched.get("results", [])]
+        auto_note = ("Updates run automatically while the app is open; overdue jobs run at start-up."
+                     if sched.get("scheduler_running") else
+                     "Scheduler not running in this process - start the app with start_app.bat, "
+                     "or use daily_update.bat / Windows Task Scheduler.")
         return html.Div([
             html.Div(className="grid grid-4", children=[
                 tile("Accuracy on unseen years", f"{ev['test_pr_auc'] / base:.1f}× chance",
@@ -322,11 +346,14 @@ def create_dashboard(server: Flask) -> Dash:
                     ]),
                 ]),
                 html.Div(className="card", children=[
-                    html.H3("Recent data updates"),
+                    html.H3("Automatic updates"),
+                    html.P(auto_note, className="sub"),
+                    html.Ul(className="reasons", children=auto),
+                    html.H3("Recent data updates", style={"marginTop": "14px"}),
                     dash_table.DataTable(
-                        data=[{"job": r["job_name"], "finished": (r["finished_at"] or "")[:16].replace("T", " "),
+                        data=[{"job": r["job_name"], "finished": ist(r["finished_at"]) if r["finished_at"] else "",
                                "status": r["status"], "rows": r["rows_added"]} for r in runs],
-                        columns=[{"name": n, "id": n} for n in ("job", "finished", "status", "rows")],
+                        columns=[{"name": n if n != "finished" else "finished (IST)", "id": n} for n in ("job", "finished", "status", "rows")],
                         style_as_list_view=True, style_header={"fontWeight": "600", "backgroundColor": "white"},
                         style_cell={"fontFamily": FONT["family"], "fontSize": 12.5, "textAlign": "left",
                                     "border": "none", "borderBottom": f"1px solid {GRID}"}),

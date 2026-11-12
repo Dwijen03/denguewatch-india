@@ -30,7 +30,8 @@ Base URL when running locally: `http://localhost:8050/api/v1`. Start the server 
 | GET | `/pipeline-runs` | Recent automated jobs and their status | `limit` |
 | GET | `/signals` | Unverified news signals from the optional agent (Step 11) | `limit`, `offset` |
 | GET | `/export/outbreaks.csv` | CSV download of outbreaks | `state`, `district_code`, `year` |
-| POST | `/admin/refresh` | Start a background job | `job` = predict, weather or weather_recent; header `X-Admin-Token` |
+| GET | `/schedule` | Automatic jobs: last success, overdue or not, next planned run | – |
+| POST | `/admin/refresh` | Start a background job | `job` = predict, weather, weather_recent, daily, reports or retrain; header `X-Admin-Token` |
 
 ## Examples
 

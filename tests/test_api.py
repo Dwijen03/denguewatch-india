@@ -143,3 +143,18 @@ def test_admin_refresh_with_token_starts_job(client, monkeypatch):
     monkeypatch.setitem(routes.JOBS, "predict", lambda: None)  # do not actually run the job in tests
     r = client.post("/api/v1/admin/refresh?job=predict", headers={"X-Admin-Token": "test-token"})
     assert r.status_code == 202 and r.get_json()["started"] == "predict"
+
+
+@needs_db
+def test_schedule_endpoint(client):
+    body = client.get("/api/v1/schedule").get_json()
+    assert {r["job"] for r in body["results"]} == {"daily_update", "weekly_reports", "monthly_retrain"}
+    assert all(set(r) == {"job", "last_success", "overdue", "next_run"} for r in body["results"])
+
+
+def test_admin_refresh_accepts_step10_jobs(client, monkeypatch):
+    monkeypatch.setattr(config, "ADMIN_TOKEN", "test-token")
+    from denguewatch.api import routes
+    monkeypatch.setitem(routes.JOBS, "reports", lambda: None)
+    r = client.post("/api/v1/admin/refresh?job=reports", headers={"X-Admin-Token": "test-token"})
+    assert r.status_code == 202 and r.get_json()["started"] == "reports"

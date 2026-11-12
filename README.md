@@ -23,8 +23,8 @@ India publishes dengue outbreak information every week through the Integrated Di
 | 7 | AI/ML early-warning model | Done |
 | 8 | Flask REST API | Done |
 | 9 | Dashboard | Done |
-| 10 | Automation (scheduled updates) | Next |
-| 11 | AI agent (optional) | Planned |
+| 10 | Automation (scheduled updates) | Done |
+| 11 | AI agent (optional) | Next |
 | 12 | Testing, evaluation & final documentation | Planned |
 | 13 | Presentation & demo | Planned |
 
@@ -65,7 +65,7 @@ denguewatch-india/
 │   ├── ml/                 # Features, training, validation, risk scoring
 │   ├── api/                # REST API endpoints
 │   ├── dashboard/          # Dash pages
-│   └── scheduler/          # Automated jobs
+│   └── scheduler/          # Automatic jobs (jobs.py) and timetable (runner.py)
 ├── database/               # SQL schema and query scripts
 ├── data/
 │   ├── reference/          # Census 2011 districts, name aliases, map boundaries
@@ -293,6 +293,38 @@ Double-click `start_app.bat` (or run `python run.py`), then open <http://localho
 - Every number comes through the REST API.
 - The map uses Census 2011 boundaries and needs no internet map tiles.
 - Risk levels are always shown with a text label as well as a colour.
+
+---
+
+## Automatic updates (Step 10)
+
+The data keeps itself up to date. Three jobs, each logged in the `pipeline_runs` table:
+
+| Job | When (India time) | What it does |
+|---|---|---|
+| `daily_update` | Every day, 06:30 | Fills weather gaps (NASA POWER), fetches the last 10 days and the 16-day forecast (Open-Meteo), re-scores risk |
+| `weekly_reports` | Monday, 07:00 | Checks NCDC for new weekly PDFs, downloads and parses **only the new ones**, re-cleans and upserts outbreaks, re-scores risk |
+| `monthly_retrain` | 1st of the month, 07:30 | Retrains the model; the new model replaces the old one only if its test PR AUC is at least 95% of the current model's |
+
+**Three ways to run them:**
+
+1. **While the app is open.** `start_app.bat` starts a background scheduler (APScheduler). A laptop is often off at 06:30, so at start-up every overdue job runs once ("catch-up"). Set `ENABLE_SCHEDULER=0` in `.env` to switch it off.
+2. **Without the app.** Double-click `daily_update.bat`. It runs whatever is due. Use `daily_update.bat --status` to see the last runs, or `daily_update.bat --job weekly_reports` to force one job.
+3. **Windows Task Scheduler.** Double-click `schedule_windows_task.bat` once. It runs the update every day at 09:15, or at the next start if the laptop was off. The log goes to `data/processed/daily_update_log.txt`.
+
+**Safeguards:**
+
+- The same job never runs twice at once.
+- NCDC connection drops are retried 3 times.
+- Runs cut off by a shutdown are marked `failed`.
+- A failed job never stops the app.
+- New reports are matched by year and week. Cleaning is re-run on all rows, so an outbreak listed again updates its record instead of creating a duplicate.
+
+**Checked:** with the last 3 reports removed, the weekly job found and downloaded exactly those 3 from NCDC. It produced the same 2,224 outbreaks and 120,705 cases as the full pipeline. A second run found nothing new in 2 seconds.
+
+The API has `GET /api/v1/schedule`, and `POST /api/v1/admin/refresh?job=daily|reports|retrain` starts a job by hand.
+
+![Automatic updates](docs/screenshots/dashboard_automatic_updates.png)
 
 ---
 
