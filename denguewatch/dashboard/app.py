@@ -27,12 +27,20 @@ from denguewatch import config
 from denguewatch.api.routes import api as api_blueprint
 
 # ---------------------------------------------------------------- design tokens
-TEXT, TEXT2, GRID, SURF = "#0b0b0b", "#52514e", "#e4e3df", "#ffffff"
+TEXT, TEXT2, TEXT3, GRID, SURF = "#101828", "#475467", "#8a94a6", "#eef0f3", "#ffffff"
 BLUE, ORANGE = "#2a78d6", "#eb6834"
-LEVEL_COLOR = {"high": "#d03b3b", "medium": "#fab219", "low": "#d9d8d3"}
+LEVEL_COLOR = {"high": "#d03b3b", "medium": "#fab219", "low": "#dfe2e7"}
 LEVEL_LABEL = {"high": "High", "medium": "Medium", "low": "Low"}
 SEQ_BLUE = [[0, "#f3f7fd"], [0.15, "#cde2fb"], [0.35, "#86b6ef"], [0.6, "#3987e5"], [0.8, "#1c5cab"], [1, "#0d366b"]]
-FONT = dict(family="Segoe UI, Inter, Arial, sans-serif", size=12, color=TEXT2)
+FONT = dict(family="Inter, Segoe UI, system-ui, Arial, sans-serif", size=12, color=TEXT2)
+FONT_URL = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+# Brand mark: a rounded square with a drop (inline SVG, so it works offline)
+LOGO = ("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'>"
+        "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%232a78d6'/>"
+        "<stop offset='1' stop-color='%231c4f9c'/></linearGradient></defs>"
+        "<rect width='36' height='36' rx='10' fill='url(%23g)'/>"
+        "<path d='M18 8c4.2 5.1 7 8.9 7 12.4A7 7 0 0 1 11 20.4C11 16.9 13.8 13.1 18 8z' fill='white'/>"
+        "<circle cx='21.2' cy='21.3' r='2.1' fill='%23d03b3b'/></svg>")
 GEOJSON_PATH = config.DATA_DIR / "reference" / "districts_2011.geojson"
 
 # Census 2011 spellings that differ from the names people use today (shown as "Raigad (Raigarh)")
@@ -67,10 +75,16 @@ def nice(district: str, state: str) -> str:
 
 
 def base_layout(fig: go.Figure, height: int = 320, **kw) -> go.Figure:
-    fig.update_layout(height=height, margin=dict(l=8, r=8, t=8, b=8), paper_bgcolor=SURF, plot_bgcolor=SURF,
-                      font=FONT, hoverlabel=dict(bgcolor="white", font_size=12), **kw)
-    fig.update_xaxes(gridcolor=GRID, linecolor=GRID, zeroline=False)
-    fig.update_yaxes(gridcolor=GRID, linecolor=GRID, zeroline=False)
+    legend = {"font": {"size": 12, "color": TEXT2}, "bgcolor": "rgba(0,0,0,0)", **kw.pop("legend", {})}
+    fig.update_layout(height=height, margin=dict(l=4, r=8, t=8, b=4), paper_bgcolor="rgba(0,0,0,0)",
+                      plot_bgcolor="rgba(0,0,0,0)", font=FONT, barcornerradius=4,
+                      hoverlabel=dict(bgcolor="white", bordercolor="#e9ebef", font=dict(family=FONT["family"], size=12,
+                                                                                         color=TEXT)),
+                      legend=legend, **kw)
+    fig.update_xaxes(gridcolor=GRID, linecolor=GRID, zeroline=False, tickfont=dict(color=TEXT3, size=11),
+                     title_font=dict(color=TEXT3, size=11))
+    fig.update_yaxes(gridcolor=GRID, linecolor="rgba(0,0,0,0)", zeroline=False, tickfont=dict(color=TEXT3, size=11),
+                     title_font=dict(color=TEXT3, size=11))
     return fig
 
 
@@ -88,7 +102,7 @@ def geojson() -> dict:
 
 
 def tile(label: str, value, hint: str = "", dot: str | None = None) -> html.Div:
-    return html.Div(className="card tile", children=[
+    return html.Div(className=f"card tile {dot or ''}", children=[
         html.Div(className="label", children=[html.Span(className=f"dot {dot}") if dot else None, label]),
         html.Div(className="value", children=value),
         html.Div(className="hint", children=hint),
@@ -98,12 +112,32 @@ def tile(label: str, value, hint: str = "", dot: str | None = None) -> html.Div:
 def reasons_list(factors) -> html.Ul:
     if not factors:
         return html.Ul(className="reasons", children=[html.Li("No strong factors")])
-    return html.Ul(className="reasons", children=[html.Li(f"{f['label']}: {f['value']:g}") for f in factors])
+    return html.Ul(className="reasons", children=[
+        html.Li([html.Span(f["label"]), html.B(f"{f['value']:g}")]) for f in factors])
+
+
+def page_head(title: str, subtitle: str, *right) -> html.Div:
+    return html.Div(className="page-head", children=[
+        html.Div([html.H2(title), html.P(subtitle)]), *right])
+
+
+def table_style(**extra) -> dict:
+    """Shared DataTable styling (minimal, list view)."""
+    return dict(
+        style_as_list_view=True,
+        style_header={"fontWeight": "600", "color": TEXT3, "backgroundColor": "#f9fafb", "fontSize": 11,
+                      "textTransform": "uppercase", "letterSpacing": "0.5px", "border": "none",
+                      "borderBottom": "1px solid #e9ebef", "padding": "9px 12px"},
+        style_cell={"fontFamily": FONT["family"], "fontSize": 13, "padding": "10px 12px", "textAlign": "left",
+                    "whiteSpace": "normal", "height": "auto", "color": TEXT, "border": "none",
+                    "borderBottom": "1px solid #f0f1f4", "backgroundColor": "white"},
+        **extra)
 
 
 def create_dashboard(server: Flask) -> Dash:
     app = Dash(__name__, server=server, url_base_pathname="/dashboard/", title="DengueWatch India",
-               assets_folder=str(Path(__file__).parent / "assets"), suppress_callback_exceptions=True)
+               assets_folder=str(Path(__file__).parent / "assets"), suppress_callback_exceptions=True,
+               external_stylesheets=[FONT_URL])  # Inter font when online; system font otherwise
 
     # The dashboard reads everything through the REST API. It uses an internal Flask app that holds
     # only the API blueprint, so calls stay in-process (no network) and avoid Dash's request hooks.
@@ -122,18 +156,28 @@ def create_dashboard(server: Flask) -> Dash:
         h = api("/health") or {}
         d = h.get("data", {}) if isinstance(h.get("data"), dict) else {}
         yw = d.get("latest_report_yearweek")
-        report = f"week {yw % 100} of {yw // 100}" if yw else "–"
-        return html.Div(className="header", children=[
+        report = f"wk {yw % 100}, {yw // 100}" if yw else "–"
+        weather = pd.Timestamp(d["latest_weather_date"]).strftime("%d %b") if d.get("latest_weather_date") else "–"
+        updated = ist(d.get("last_successful_run"))
+        updated = updated[-5:] + " IST, " + pd.Timestamp(updated[:10]).strftime("%d %b") if updated != "–" else "–"
+        return html.Div(className="topbar", children=html.Div(className="topbar-inner", children=[
             html.Div(className="brand", children=[
-                html.H1("DengueWatch India"),
-                html.P("Weather-driven early warning of dengue outbreaks for Indian districts"),
+                html.Img(src=LOGO, alt=""),
+                html.Div([html.Div(className="brand-name", children=["DengueWatch ", html.Span("India")]),
+                          html.Div("Weather-driven early warning of dengue outbreaks", className="brand-sub")]),
             ]),
-            html.Div(className="freshness", children=[
-                html.Div(f"Latest IDSP outbreak report: {report} (ending {d.get('latest_report_week_end', '–')})"),
-                html.Div(f"Weather observed up to {d.get('latest_weather_date', '–')} · forecast 16 days ahead"),
-                html.Div(f"Last automatic update: {ist(d.get('last_successful_run'))} IST"
-                         " · decision support only, not an official alert"),
+            html.Div(className="meta", children=[
+                html.Span(className="chip-meta", children=["IDSP report ", html.B(report)]),
+                html.Span(className="chip-meta", children=["Weather to ", html.B(weather), " + 16-day forecast"]),
+                html.Span(className="chip-meta", children=[html.Span(className="pulse"), "Updated ", html.B(updated)]),
             ]),
+        ]))
+
+    def footer():
+        return html.Div(className="footer", children=[
+            html.Span("Decision support only, not an official alert. Data: IDSP weekly outbreak reports (NCDC), "
+                      "NASA POWER, Open-Meteo, DataMeet boundaries."),
+            html.Span(["Dwijen Mehta · Mahindra University · ", html.A("REST API", href="/api/v1/")]),
         ])
 
     def district_options():
@@ -151,10 +195,9 @@ def create_dashboard(server: Flask) -> Dash:
         districts = district_options()
         risk = api("/risk/current") or {}
         top = (risk.get("results") or [{}])[0].get("census_code")
-        return html.Div(className="page", children=[
-            header(),
+        return html.Div([header(), html.Div(className="page", children=[
             dcc.Store(id="selected-district", data=top),
-            dcc.Tabs(id="tabs", value="risk", className="tabs-container", children=[
+            dcc.Tabs(id="tabs", value="risk", className="tabs-container", mobile_breakpoint=0, children=[
                 dcc.Tab(label="Risk this week", value="risk", className="tab", selected_className="tab--selected",
                         children=risk_page(states)),
                 dcc.Tab(label="District explorer", value="district", className="tab",
@@ -166,71 +209,70 @@ def create_dashboard(server: Flask) -> Dash:
                 dcc.Tab(label="Ask AI", value="ask", className="tab",
                         selected_className="tab--selected", children=ask_page()),
             ]),
-        ])
+        ]), footer()])
 
     def risk_page(states):
         return html.Div([
-            html.Div(className="filters", children=[
-                html.Div(className="filter", children=[html.Label("State"), dcc.Dropdown(
-                    id="risk-state", options=states, value="", clearable=False)]),
-                html.Div(className="filter", children=[html.Label("Show"), dcc.Checklist(
-                    id="risk-levels", options=[{"label": f" {LEVEL_LABEL[k]}", "value": k} for k in LEVEL_COLOR],
-                    value=["high", "medium", "low"], inline=True, inputStyle={"marginLeft": "10px"})]),
-            ]),
+            page_head("Risk this week", "Where a new dengue outbreak is most likely to start in the next 4 weeks",
+                      html.Div(className="filters", children=[
+                          html.Div(className="filter", children=[html.Label("State"), dcc.Dropdown(
+                              id="risk-state", options=states, value="", clearable=False)]),
+                          html.Div(className="filter", style={"minWidth": "0"}, children=[html.Label("Show"), dcc.Checklist(
+                              id="risk-levels", className="chips-levels", inline=True, value=["high", "medium", "low"],
+                              options=[{"label": LEVEL_LABEL[k], "value": k} for k in LEVEL_COLOR])]),
+                      ])),
             html.Div(id="risk-tiles", className="grid grid-4"),
-            html.Div(className="grid grid-2", style={"marginTop": "14px"}, children=[
+            html.Div(className="grid grid-2 gap-top", children=[
                 html.Div(className="card", children=[
-                    html.H3("Outbreak risk by district"),
-                    html.P(id="risk-window", className="sub"),
+                    html.Div(className="card-head", children=[
+                        html.Div([html.H3("Outbreak risk by district"), html.P(id="risk-window", className="sub")]),
+                        html.Div(className="legend", children=[
+                            html.Span([html.Span(className="dot high"), "High"]),
+                            html.Span([html.Span(className="dot medium"), "Medium"]),
+                            html.Span([html.Span(className="dot low"), "Low"])]),
+                    ]),
                     dcc.Graph(id="risk-map", config={"displayModeBar": False}),
-                    html.Div(className="note", children=[
-                        html.Span(className="dot high"), "High  ", html.Span(className="dot medium"), "Medium  ",
-                        html.Span(className="dot low"), "Low  ·  Click a district to open it in the explorer. "
-                        "Boundaries: Census 2011 districts (newer districts are part of their 2011 parent)."]),
+                    html.Div(className="note", children="Click a district to open it. Boundaries: Census 2011 districts "
+                                                        "(newer districts are part of their 2011 parent)."),
                 ]),
                 html.Div(className="card", children=[
                     html.H3("Districts to watch"),
-                    html.P("Highest risk first. Reasons are the factors that raised each district's score.",
+                    html.P("Highest risk first, with the factors that raised each score. Click a row to explore.",
                            className="sub"),
                     dcc.Store(id="risk-rows"),
-                    dash_table.DataTable(
-                        id="risk-table", page_size=14, sort_action="custom", sort_mode="single", sort_by=[],
-                        style_as_list_view=True,
+                    html.Div(className="clickable", children=dash_table.DataTable(
+                        id="risk-table", page_size=12, sort_action="custom", sort_mode="single", sort_by=[],
+                        markdown_options={"html": True},
                         columns=[{"name": "District", "id": "district"}, {"name": "State", "id": "state"},
-                                 {"name": "Risk", "id": "level"}, {"name": "Score", "id": "score"},
+                                 {"name": "Risk", "id": "level_pill", "presentation": "markdown"},
+                                 {"name": "Score", "id": "score", "type": "numeric", "format": {"specifier": ".2f"}},
                                  {"name": "Main reasons", "id": "reasons"}],
-                        style_header={"fontWeight": "600", "color": TEXT2, "backgroundColor": "white",
-                                      "borderBottom": f"1px solid {GRID}"},
-                        style_cell={"fontFamily": FONT["family"], "fontSize": 12.5, "padding": "6px",
-                                    "textAlign": "left", "whiteSpace": "normal", "height": "auto",
-                                    "border": "none", "borderBottom": f"1px solid {GRID}"},
-                        style_cell_conditional=[{"if": {"column_id": "reasons"}, "width": "42%", "color": TEXT2}],
-                        style_data_conditional=[
-                            {"if": {"filter_query": '{level} = "High"', "column_id": "level"},
-                             "color": "#8f2020", "fontWeight": "600"},
-                            {"if": {"filter_query": '{level} = "Medium"', "column_id": "level"},
-                             "color": "#7a5200", "fontWeight": "600"},
-                            {"if": {"state": "active"}, "backgroundColor": "#f3f7fd", "border": "none"}],
-                    ),
+                        style_cell_conditional=[{"if": {"column_id": "reasons"}, "width": "40%", "color": TEXT2,
+                                                 "fontSize": 12.5},
+                                                {"if": {"column_id": "score"}, "fontVariantNumeric": "tabular-nums"},
+                                                {"if": {"column_id": "district"}, "fontWeight": "550"}],
+                        style_data_conditional=[{"if": {"state": "active"}, "backgroundColor": "#f3f7fd",
+                                                 "border": "none"}],
+                        **table_style())),
                 ]),
             ]),
         ])
 
     def district_page(districts):
         return html.Div([
-            html.Div(className="filters", children=[
+            page_head("District explorer", "Risk, history and weather for one district"),
+            html.Div(className="filters", style={"marginBottom": "16px"}, children=[
                 html.Div(className="filter", style={"minWidth": "320px"}, children=[
                     html.Label("District"), dcc.Dropdown(id="district-select", options=districts,
                                                          placeholder="Type a district name", clearable=False)]),
-                html.Div(className="filter", children=[html.Label("Period"), dcc.RadioItems(
-                    id="district-period", value=2, inline=True, inputStyle={"marginLeft": "10px"},
-                    options=[{"label": " 1 year", "value": 1}, {"label": " 2 years", "value": 2},
-                             {"label": " 5 years", "value": 5}, {"label": " Since 2010", "value": 17}])]),
-                html.A("Download this district's outbreaks (CSV)", id="district-csv", href="#",
-                       style={"marginLeft": "auto", "fontSize": "13px"}),
+                html.Div(className="filter", style={"minWidth": "0"}, children=[html.Label("Period"), dcc.RadioItems(
+                    id="district-period", value=2, inline=True,
+                    options=[{"label": "1 year", "value": 1}, {"label": "2 years", "value": 2},
+                             {"label": "5 years", "value": 5}, {"label": "Since 2010", "value": 17}])]),
+                html.A("↓  Download outbreaks (CSV)", id="district-csv", href="#", className="download"),
             ]),
             html.Div(id="district-tiles", className="grid grid-4"),
-            html.Div(className="grid grid-2", style={"marginTop": "14px"}, children=[
+            html.Div(className="grid grid-2 gap-top", children=[
                 html.Div(className="card", children=[
                     html.H3("Outbreaks, rain and temperature by week"),
                     html.P("Dengue usually follows rain and warm nights by several weeks. "
@@ -241,7 +283,9 @@ def create_dashboard(server: Flask) -> Dash:
                     html.H3("Risk score over recent weeks"),
                     html.P("Each point is the risk for the 4 weeks starting that week.", className="sub"),
                     dcc.Graph(id="district-risk", config={"displayModeBar": False}),
-                    html.H3("Why this risk level?", style={"marginTop": "10px"}),
+                    html.H3("Why this risk level?", style={"marginTop": "18px"}),
+                    html.P("Factors that changed this district's score the most", className="sub",
+                           style={"marginBottom": "0"}),
                     html.Div(id="district-reasons"),
                 ]),
             ]),
@@ -249,7 +293,8 @@ def create_dashboard(server: Flask) -> Dash:
 
     def compare_page(states):
         return html.Div([
-            html.Div(className="filters", children=[
+            page_head("Compare districts & years", "How outbreaks are spread across districts, years and months"),
+            html.Div(className="filters", style={"marginBottom": "16px"}, children=[
                 html.Div(className="filter", children=[html.Label("State"), dcc.Dropdown(
                     id="cmp-state", options=states, value="Maharashtra", clearable=False)]),
                 html.Div(className="filter", style={"minWidth": "360px"}, children=[
@@ -263,7 +308,7 @@ def create_dashboard(server: Flask) -> Dash:
                        className="sub"),
                 dcc.Graph(id="cmp-heatmap", config={"displayModeBar": False}),
             ]),
-            html.Div(className="grid grid-2-even", style={"marginTop": "14px"}, children=[
+            html.Div(className="grid grid-2-even gap-top", children=[
                 html.Div(className="card", children=[html.H3("When do outbreaks start?"),
                                                      html.P("Outbreaks by month of onset", className="sub"),
                                                      dcc.Graph(id="cmp-season", config={"displayModeBar": False})]),
@@ -287,7 +332,7 @@ def create_dashboard(server: Flask) -> Dash:
             text=[f"{r['pr_auc']:.3f} ({r['pr_auc'] / base:.1f}×)" for r in comp], textposition="outside",
             hovertemplate="%{y}<br>PR AUC %{x:.3f}<extra></extra>"))
         comp_fig.add_vline(x=base, line_dash="dash", line_color=TEXT2)
-        base_layout(comp_fig, 260, xaxis_title="Precision–recall AUC on unseen years")
+        base_layout(comp_fig, 260, bargap=0.4, xaxis_title="Precision–recall AUC on unseen years")
         comp_fig.update_xaxes(range=[0, max(r["pr_auc"] for r in comp) * 1.45])
         ks = [1, 2, 3, 4]
         lead = go.Figure([
@@ -297,7 +342,7 @@ def create_dashboard(server: Flask) -> Dash:
             go.Bar(name="High alert only", x=[f"≥{k} wk" for k in ks], marker_color=ORANGE,
                    y=[100 * w[f"high_{k}plus_weeks"] for k in ks], texttemplate="%{y:.0f}%",
                    textposition="outside", hovertemplate="%{y:.0f}% warned %{x} ahead<extra></extra>")])
-        base_layout(lead, 260, barmode="group", bargap=0.3, yaxis_title="% of outbreaks warned",
+        base_layout(lead, 260, barmode="group", bargap=0.35, bargroupgap=0.08, yaxis_title="% of outbreaks warned",
                     legend=dict(orientation="h", y=1.12, x=0))
         lead.update_yaxes(range=[0, 100])
         h, mh = ev["high_alert"], ev["medium_or_high_alert"]
@@ -307,18 +352,22 @@ def create_dashboard(server: Flask) -> Dash:
                   "monthly_retrain": "Retrain model (monthly)", "news_signals": "AI news agent (daily)"}
 
         when = ist
-        auto = [html.Li([html.B(labels.get(r["job"], r["job"])), f" · last {when(r['last_success'])}",
-                         html.Span(" · overdue", style={"color": "#8f2020"}) if r["overdue"] else "",
-                         f" · next {when(r['next_run'])}" if r["next_run"] else ""])
-                for r in sched.get("results", [])]
+        auto = [html.Li([
+            html.Span(labels.get(r["job"], r["job"]), style={"color": TEXT, "fontWeight": 550}),
+            html.Span(style={"display": "flex", "gap": "8px", "alignItems": "center"}, children=[
+                html.Span(f"last {when(r['last_success'])}" + (f" · next {when(r['next_run'])}" if r["next_run"] else ""),
+                          style={"fontSize": "12px", "color": TEXT3}),
+                html.Span("Overdue", className="badge high") if r["overdue"] else html.Span("OK", className="badge ok"),
+            ])]) for r in sched.get("results", [])]
         auto_note = ("Updates run automatically while the app is open; overdue jobs run at start-up."
                      if sched.get("scheduler_running") else
                      "Scheduler not running in this process - start the app with start_app.bat, "
                      "or use daily_update.bat / Windows Task Scheduler.")
         return html.Div([
+            page_head("Model & data", "How well the early-warning model works on years it never saw, and how fresh the data is"),
             html.Div(className="grid grid-4", children=[
                 tile("Accuracy on unseen years", f"{ev['test_pr_auc'] / base:.1f}× chance",
-                     f"PR AUC {ev['test_pr_auc']:.3f} · ROC AUC {ev['test_roc_auc']:.2f} · {ev['test_period']}"),
+                     f"PR AUC {ev['test_pr_auc']:.3f} · ROC AUC {ev['test_roc_auc']:.2f} · {ev['test_period']}", "accent"),
                 tile("High alerts catch", f"{100 * h['recall']:.0f}%",
                      f"of outbreaks, flagging {100 * h['alert_rate']:.0f}% of district-weeks"),
                 tile("Medium + high catch", f"{100 * mh['recall']:.0f}%",
@@ -326,7 +375,7 @@ def create_dashboard(server: Flask) -> Dash:
                 tile("Warned ≥ 2 weeks ahead", f"{100 * w['medium_or_high_2plus_weeks']:.0f}%",
                      "of outbreaks (medium or high alert)"),
             ]),
-            html.Div(className="grid grid-2-even", style={"marginTop": "14px"}, children=[
+            html.Div(className="grid grid-2-even gap-top", children=[
                 html.Div(className="card", children=[html.H3("Model comparison"), html.P(
                     f"All trained on 2010–2022, tested on later years they never saw. Dashed line = chance ({base:.3f}).",
                     className="sub"),
@@ -335,7 +384,7 @@ def create_dashboard(server: Flask) -> Dash:
                     "Share of outbreaks already flagged 1–4 weeks before they started.", className="sub"),
                     dcc.Graph(figure=lead, config={"displayModeBar": False})]),
             ]),
-            html.Div(className="grid grid-2-even", style={"marginTop": "14px"}, children=[
+            html.Div(className="grid grid-2-even gap-top", children=[
                 html.Div(className="card", children=[
                     html.H3("About the model"),
                     html.Ul(className="reasons", children=[
@@ -359,9 +408,11 @@ def create_dashboard(server: Flask) -> Dash:
                                "status": r["status"], "rows": r["rows_added"]} for r in runs],
                         columns=[{"name": n if n != "finished" else "finished (IST)", "id": n}
                                  for n in ("job", "finished", "status", "rows")],
-                        style_as_list_view=True, style_header={"fontWeight": "600", "backgroundColor": "white"},
-                        style_cell={"fontFamily": FONT["family"], "fontSize": 12.5, "textAlign": "left",
-                                    "border": "none", "borderBottom": f"1px solid {GRID}"}),
+                        style_data_conditional=[{"if": {"filter_query": '{status} = "failed"', "column_id": "status"},
+                                                 "color": "#a32222", "fontWeight": "600"},
+                                                {"if": {"filter_query": '{status} = "success"', "column_id": "status"},
+                                                 "color": "#1a6b1a"}],
+                        **table_style()),
                     html.Div(className="note", children=[
                         "Data: IDSP Weekly Outbreak Reports (NCDC), NASA POWER, Open-Meteo (CC BY 4.0), "
                         "DataMeet district boundaries (CC BY 2.5 IN). API: ", html.A("/api/v1/", href="/api/v1/")]),
@@ -392,14 +443,15 @@ def create_dashboard(server: Flask) -> Dash:
                  "cases": r["extracted_cases"], "headline": f"[{r['headline']}]({r['url']})",
                  "status": status_label.get(r["verification_status"], r["verification_status"])} for r in res]
         body = (dash_table.DataTable(
-            data=rows, page_size=10, style_as_list_view=True, markdown_options={"link_target": "_blank"},
+            data=rows, page_size=10, markdown_options={"link_target": "_blank"},
             columns=[{"name": "Date", "id": "date"}, {"name": "Place", "id": "place"},
                      {"name": "Cases", "id": "cases"}, {"name": "Headline", "id": "headline", "presentation": "markdown"},
                      {"name": "Check", "id": "status"}],
-            style_header={"fontWeight": "600", "backgroundColor": "white"},
-            style_cell={"fontFamily": FONT["family"], "fontSize": 12.5, "textAlign": "left", "border": "none",
-                        "borderBottom": f"1px solid {GRID}", "whiteSpace": "normal", "height": "auto"},
-            style_cell_conditional=[{"if": {"column_id": "headline"}, "width": "48%"}])
+            style_cell_conditional=[{"if": {"column_id": "headline"}, "width": "48%"},
+                                    {"if": {"column_id": "date"}, "color": TEXT3, "width": "92px"}],
+            style_data_conditional=[{"if": {"filter_query": '{status} = "Later in IDSP"', "column_id": "status"},
+                                     "color": "#1a6b1a", "fontWeight": "600"}],
+            **table_style())
                 if rows else html.P("No news signals yet. The news agent runs every morning once a Gemini key is set "
                                     "(setup_agent.bat).", className="sub"))
         return html.Div(className="card", children=[
@@ -412,7 +464,8 @@ def create_dashboard(server: Flask) -> Dash:
 
     def ask_page():
         return html.Div([
-            html.Div(className="card", children=[
+            page_head("Ask AI", "Plain-English questions answered from the database, and early news signals"),
+            html.Div(className="card ask-hero", children=[
                 html.H3("Ask DengueWatch"),
                 html.P("Ask about outbreaks, cases, weather or current risk in plain English. An AI model (Google Gemini) "
                        "writes a read-only SQL query, the app checks and runs it, and the AI summarises the result. "
@@ -428,19 +481,20 @@ def create_dashboard(server: Flask) -> Dash:
                     for i, q in enumerate(EXAMPLES)]),
                 dcc.Loading(type="dot", color=BLUE, children=html.Div(id="ask-output", className="ask-output")),
             ]),
-            html.Div(style={"marginTop": "14px"}, children=signals_card()),
+            html.Div(className="gap-top", children=signals_card()),
         ])
 
     def render_answer(status: int, res: dict):
         if status != 200:
             msg = (res.get("error") or {}).get("message", "Something went wrong")
             return html.Div(className="answer warn", children=msg)
-        badge = {"answered": "low", "refused": "medium", "blocked": "high", "failed": "high"}.get(res["status"], "low")
+        badge = {"answered": "ok", "refused": "medium", "blocked": "high", "failed": "high"}.get(res["status"], "low")
         meta = [html.Span(res["status"].capitalize(), className=f"badge {badge}"),
                 f"  {len(res.get('rows') or [])} rows · {res.get('duration_ms', 0) / 1000:.1f} s"
                 + (f" · {res['attempts']} attempts" if res.get("attempts", 1) > 1 else "")
                 + (f" · AI: {res['model'].split('/', 1)[-1]}" if res.get("model") else "")]
-        parts = [html.Div(className="answer", children=res.get("answer") or ""), html.Div(className="sub", children=meta)]
+        parts = [html.Div(className="answer", children=res.get("answer") or ""),
+                 html.Div(className="answer-meta", children=meta)]
         rows, cols = res.get("rows") or [], res.get("columns") or []
         chart = res.get("chart") or {}
         if (rows and len(rows) > 1 and isinstance(chart, dict) and chart.get("type") in ("bar", "line")
@@ -450,14 +504,12 @@ def create_dashboard(server: Flask) -> Dash:
                 y = pd.to_numeric(df[chart["y"]], errors="coerce")
                 trace = (go.Bar(x=df[chart["x"]].astype(str), y=y, marker_color=BLUE) if chart["type"] == "bar"
                          else go.Scatter(x=df[chart["x"]], y=y, mode="lines+markers", line=dict(color=BLUE, width=2)))
-                fig = base_layout(go.Figure(trace), 300, xaxis_title=chart["x"], yaxis_title=chart["y"])
+                fig = base_layout(go.Figure(trace), 300, xaxis_title=chart["x"], yaxis_title=chart["y"], bargap=0.35)
                 parts.append(dcc.Graph(figure=fig, config={"displayModeBar": False}))
         if rows:
             parts.append(dash_table.DataTable(
-                data=rows, columns=[{"name": c, "id": c} for c in cols], page_size=10, style_as_list_view=True,
-                style_table={"overflowX": "auto"}, style_header={"fontWeight": "600", "backgroundColor": "white"},
-                style_cell={"fontFamily": FONT["family"], "fontSize": 12.5, "textAlign": "left", "border": "none",
-                            "borderBottom": f"1px solid {GRID}"}))
+                data=rows, columns=[{"name": c, "id": c} for c in cols], page_size=10,
+                style_table={"overflowX": "auto"}, **table_style()))
         if res.get("sql"):
             parts.append(html.Details(className="sql", children=[
                 html.Summary("Show the SQL query"),
@@ -503,7 +555,7 @@ def create_dashboard(server: Flask) -> Dash:
             tile("Medium risk", int(counts.get("medium", 0)), "districts", "medium"),
             tile("Low risk", int(counts.get("low", 0)), "districts", "low"),
             tile("Forecast window", f"{pd.Timestamp(win['from']):%d %b} – {pd.Timestamp(win['to']):%d %b}",
-                 "risk of an outbreak starting in these 4 weeks"),
+                 "4 weeks ahead", "accent"),
         ]
         rows["reasons"] = rows["top_factors"].map(lambda f: "; ".join(x["label"] for x in (f or [])))
         rows["reasons_short"] = rows["top_factors"].map(lambda f: "; ".join(x["label"] for x in (f or [])[:2]))
@@ -516,7 +568,7 @@ def create_dashboard(server: Flask) -> Dash:
             fig.add_trace(go.Choroplethmap(
                 geojson=geojson(), locations=part["census_code"], featureidkey="id",
                 z=[1] * len(part), colorscale=[[0, LEVEL_COLOR[level]], [1, LEVEL_COLOR[level]]], showscale=False,
-                marker_line_color="white", marker_line_width=0.5, marker_opacity=0.95, name=LEVEL_LABEL[level],
+                marker_line_color="white", marker_line_width=0.6, marker_opacity=1, name=LEVEL_LABEL[level],
                 customdata=list(zip([nice(a, b) for a, b in zip(part["district_name"], part["state_name"])],
                                     part["state_name"], part["risk_score"], part["reasons"])),
                 hovertemplate="<b>%{customdata[0]}</b>, %{customdata[1]}<br>" + LEVEL_LABEL[level] +
@@ -529,6 +581,7 @@ def create_dashboard(server: Flask) -> Dash:
                                                                 lon=float((lon.max() + lon.min()) / 2)), zoom=zoom))
         base_layout(fig, 640, showlegend=False)
         table = [{"district": nice(r.district_name, r.state_name), "state": r.state_name, "level": LEVEL_LABEL[r.risk_level],
+                  "level_pill": f'<span class="pill {r.risk_level}">{LEVEL_LABEL[r.risk_level]}</span>',
                   "score": round(r.risk_score, 2), "reasons": r.reasons_short, "code": r.census_code}
                  for r in rows[rows["risk_level"].isin(["high", "medium"])].itertuples()]
         window = (f"Risk that a new outbreak starts between {pd.Timestamp(win['from']):%d %b %Y} and "
@@ -546,7 +599,7 @@ def create_dashboard(server: Flask) -> Dash:
         col, desc = sort_by[0]["column_id"], sort_by[0]["direction"] == "desc"
 
         def key(r):
-            if col == "level":
+            if col in ("level", "level_pill"):
                 return RANK.get(r["level"], -1), r["score"]
             if col == "score":
                 return r["score"]
@@ -581,10 +634,10 @@ def create_dashboard(server: Flask) -> Dash:
         s, risk = d["summary"], d.get("current_risk")
         level = risk["risk_level"] if risk else None
         tiles = [
-            tile("Current risk", html.Span(className=f"badge {level}", children=LEVEL_LABEL[level]) if level else "–",
-                 f"score {risk['risk_score']:.2f} for {pd.Timestamp(risk['target_week_start']):%d %b} – "
-                 f"{pd.Timestamp(risk['target_week_end']):%d %b}" if risk else "no score yet"),
-            tile("Outbreaks since 2009", s["outbreaks"], f"{s['cases']:,} cases, {s['deaths']} deaths"),
+            tile("Current risk", LEVEL_LABEL[level] if level else "–",
+                 f"score {risk['risk_score']:.2f} · {pd.Timestamp(risk['target_week_start']):%d %b} – "
+                 f"{pd.Timestamp(risk['target_week_end']):%d %b}" if risk else "no score yet", level),
+            tile("Outbreaks since 2009", s["outbreaks"], f"{s['cases']:,} cases · {s['deaths']} deaths", "accent"),
             tile("Years with outbreaks", s["years_with_outbreaks"], "out of 17 years of reports"),
             tile("Last reported outbreak", pd.Timestamp(s["last_outbreak"]).strftime("%d %b %Y")
                  if s["last_outbreak"] else "none", f"{nice(d['district_name'], d['state_name'])}, {d['state_name']}"),
@@ -612,10 +665,10 @@ def create_dashboard(server: Flask) -> Dash:
                 for row in (1, 2, 3):
                     timeline_fig.add_vrect(x0=fc["week_start"].min() - pd.Timedelta(days=3),
                                            x1=fc["week_start"].max() + pd.Timedelta(days=4),
-                                           fillcolor="#efeee9", opacity=0.6, line_width=0, row=row, col=1)
+                                           fillcolor="#eef0f3", opacity=0.7, line_width=0, row=row, col=1)
             base_layout(timeline_fig, 470, showlegend=False, bargap=0.15, hovermode="x unified")
             timeline_fig.update_layout(margin=dict(l=8, r=8, t=26, b=8))
-            timeline_fig.update_annotations(font=dict(size=12, color=TEXT2), x=0, xanchor="left")
+            timeline_fig.update_annotations(font=dict(size=12, color=TEXT2, family=FONT["family"]), x=0, xanchor="left")
             timeline_fig.update_yaxes(rangemode="tozero", dtick=1, row=1, col=1)
         hist = pd.DataFrame((api(f"/risk/{code}") or {}).get("results", []))
         if hist.empty:
@@ -635,12 +688,12 @@ def create_dashboard(server: Flask) -> Dash:
                 if lvl in thr:
                     risk_fig.add_hline(y=thr[lvl], line_dash="dot", line_color=LEVEL_COLOR[lvl],
                                        annotation_text=f"{LEVEL_LABEL[lvl]} from {thr[lvl]:.2f}",
-                                       annotation_position="top left", annotation_font_color=TEXT2)
+                                       annotation_position="top left", annotation_font_color=TEXT3,
+                                       annotation_font_size=11)
             base_layout(risk_fig, 220, yaxis_title="Risk score")
             risk_fig.update_yaxes(range=[0, max(0.6, hist["risk_score"].max() * 1.15)])
             latest = hist.iloc[-1]
-            reasons = html.Div([html.P("Factors that raised this district's latest score most:", className="sub"),
-                                reasons_list(latest["top_factors"])])
+            reasons = reasons_list(latest["top_factors"])
         return tiles, timeline_fig, risk_fig, reasons, f"/api/v1/export/outbreaks.csv?district_code={code}"
 
     # ------------------------------------------------------------ callbacks: compare page
@@ -674,14 +727,14 @@ def create_dashboard(server: Flask) -> Dash:
         season = go.Figure(go.Bar(
             x=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
             y=months.to_numpy(), marker_color=BLUE, hovertemplate="%{x}: %{y} outbreaks<extra></extra>"))
-        base_layout(season, 280, yaxis_title="Outbreaks")
+        base_layout(season, 280, yaxis_title="Outbreaks", bargap=0.35)
         per_year = ob["report_year"].value_counts().reindex(range(y0, y1 + 1), fill_value=0)
         yearly = go.Figure(go.Bar(x=per_year.index, y=per_year.to_numpy(), marker_color=BLUE,
                                   hovertemplate="%{x}: %{y} outbreaks<extra></extra>"))
         if y0 <= 2020 <= y1:
             yearly.add_annotation(x=2020, y=per_year.get(2020, 0), text="COVID-19", showarrow=True, arrowhead=0,
                                   ay=-30, font=dict(color=TEXT2, size=11))
-        base_layout(yearly, 280, yaxis_title="Outbreaks")
+        base_layout(yearly, 280, yaxis_title="Outbreaks", bargap=0.35)
         yearly.update_xaxes(dtick=1 if y1 - y0 <= 10 else 2)
         return heat, season, yearly
 
