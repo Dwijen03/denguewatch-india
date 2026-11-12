@@ -16,8 +16,7 @@ sys.path.insert(0, str(ROOT))
 
 import requests  # noqa: E402
 
-from denguewatch import config  # noqa: E402
-from denguewatch.agent.llm import Gemini, LLMError, parse_json, rank_models, _text  # noqa: E402
+from denguewatch.agent.llm import Gemini, LLMError, _text, parse_json, rank_models  # noqa: E402
 
 
 def try_model(llm: Gemini, name: str) -> tuple[str, float | None]:

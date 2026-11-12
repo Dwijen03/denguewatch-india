@@ -91,8 +91,11 @@ def main() -> int:
 
     print("4. News agent: reading today's dengue news ...")
     from denguewatch.agent import news_agent
+    from denguewatch.db.loader import pipeline_run
     try:
-        out = news_agent.run(llm=llm)
+        with pipeline_run("news_signals") as run:          # logged like the scheduled job
+            out = news_agent.run(llm=llm)
+            run["rows"] = out.get("relevant", 0)
         print(f"   OK - {out['new']} new articles, {out['relevant']} relevant, "
               f"{out['newly_matched_idsp']} matched IDSP")
     except Exception as exc:  # noqa: BLE001

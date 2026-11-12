@@ -129,13 +129,23 @@ def test_daily_quota_model_is_skipped_afterwards(monkeypatch):
         calls.append(name)
         if name == "x-3.8-flash":
             r = FakeResponse(429)
-            r.text = '{"error": {"details": [{"violations": [{"quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier"}]}]}}'
+            r.text = ('{"error": {"details": [{"violations": '
+                      '[{"quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier"}]}]}}')
             return r
         return ok_reply({"ok": True})
     monkeypatch.setattr(llm.session, "post", post)
     assert llm.generate_json("s", "q") == {"ok": True}
     assert llm.generate_json("s", "q") == {"ok": True}
     assert calls == ["x-3.8-flash", "x-3.6-flash", "x-3.6-flash"]     # used-up model not asked again
+
+
+def test_daily_quota_cool_down_survives_a_restart(monkeypatch):
+    from denguewatch.agent import llm
+    llm._cool("gemini-x-flash", 6 * 3600)
+    assert llm.COOLDOWN_FILE.exists()
+    monkeypatch.setattr(llm, "_cooldown", {})          # simulate a new run of the app
+    monkeypatch.setattr(llm, "_loaded", False)
+    assert llm._cooling("gemini-x-flash") and not llm._cooling("gemini-y-flash")
 
 
 def test_all_models_busy_gives_clear_error(monkeypatch):

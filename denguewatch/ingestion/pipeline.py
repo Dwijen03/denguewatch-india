@@ -13,7 +13,6 @@ from __future__ import annotations
 import logging
 import os
 from concurrent.futures import ProcessPoolExecutor
-from pathlib import Path
 
 import pandas as pd
 import requests

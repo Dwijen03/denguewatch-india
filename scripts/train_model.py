@@ -8,7 +8,6 @@ registers it in model_versions, and writes risk scores for the last 12 weeks to 
 """
 
 import argparse
-import json
 import logging
 import sys
 from pathlib import Path
@@ -49,7 +48,7 @@ def main() -> None:
         w = m["warned"]
         print(f"Outbreaks flagged medium/high 1+ weeks ahead: {pct(w['medium_or_high_1plus_weeks'])}, "
               f"2+ weeks ahead: {pct(w['medium_or_high_2plus_weeks'])}")
-        print(f"Importance by group: " + ", ".join(f"{g} {pct(v)}" for g, v in m["importance_by_group"].items()))
+        print("Importance by group: " + ", ".join(f"{g} {pct(v)}" for g, v in m["importance_by_group"].items()))
         print(f"\nSaved model {model_id}: {path}")
 
     rows = predict_latest(weeks_back=args.weeks_back)

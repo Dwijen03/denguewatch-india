@@ -357,7 +357,8 @@ def create_dashboard(server: Flask) -> Dash:
                     dash_table.DataTable(
                         data=[{"job": r["job_name"], "finished": ist(r["finished_at"]) if r["finished_at"] else "",
                                "status": r["status"], "rows": r["rows_added"]} for r in runs],
-                        columns=[{"name": n if n != "finished" else "finished (IST)", "id": n} for n in ("job", "finished", "status", "rows")],
+                        columns=[{"name": n if n != "finished" else "finished (IST)", "id": n}
+                                 for n in ("job", "finished", "status", "rows")],
                         style_as_list_view=True, style_header={"fontWeight": "600", "backgroundColor": "white"},
                         style_cell={"fontFamily": FONT["family"], "fontSize": 12.5, "textAlign": "left",
                                     "border": "none", "borderBottom": f"1px solid {GRID}"}),
@@ -543,12 +544,13 @@ def create_dashboard(server: Flask) -> Dash:
         if not sort_by:
             return rows  # API order: highest score first
         col, desc = sort_by[0]["column_id"], sort_by[0]["direction"] == "desc"
-        if col == "level":
-            key = lambda r: (RANK.get(r["level"], -1), r["score"])
-        elif col == "score":
-            key = lambda r: r["score"]
-        else:
-            key = lambda r: str(r.get(col) or "").lower()
+
+        def key(r):
+            if col == "level":
+                return RANK.get(r["level"], -1), r["score"]
+            if col == "score":
+                return r["score"]
+            return str(r.get(col) or "").lower()
         return sorted(rows, key=key, reverse=desc)
 
     # map click / table click -> open district explorer

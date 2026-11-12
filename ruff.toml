@@ -1,0 +1,11 @@
+# Code style checks (Step 12):  ruff check .
+line-length = 130
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = [
+    "B905",   # zip() without strict= : lengths are equal by construction
+    "B019",   # lru_cache on DistrictMatcher.match: one long-lived matcher per process, cache is intended
+    "UP036",  # check_setup.py checks old Python versions on purpose, to print a helpful message
+]

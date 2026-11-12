@@ -14,7 +14,7 @@ if exist ".venv\Scripts\activate.bat" (
     call conda activate denguewatch
 )
 
-echo Asking the AI agent 21 test questions (about 4-6 minutes)...
+echo Asking the AI agent the test questions (about 4-8 minutes)...
 echo.
-python scripts\evaluate_agent.py
+python scripts\evaluate_agent.py %*
 pause

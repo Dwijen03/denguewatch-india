@@ -16,7 +16,7 @@ import json
 import logging
 import re
 import threading
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import pandas as pd
 from flask import Blueprint, Response, current_app, jsonify, request
@@ -81,7 +81,7 @@ def arg_int(name: str, default: int | None = None, lo: int | None = None, hi: in
     try:
         value = int(raw)
     except ValueError:
-        raise ApiError(400, f"'{name}' must be a whole number")
+        raise ApiError(400, f"'{name}' must be a whole number") from None
     if (lo is not None and value < lo) or (hi is not None and value > hi):
         raise ApiError(400, f"'{name}' must be between {lo} and {hi}")
     return value
@@ -94,7 +94,7 @@ def arg_date(name: str) -> date | None:
     try:
         return date.fromisoformat(raw)
     except ValueError:
-        raise ApiError(400, f"'{name}' must be a date like 2024-07-01")
+        raise ApiError(400, f"'{name}' must be a date like 2024-07-01") from None
 
 
 def arg_choice(name: str, choices, default=None):
@@ -373,7 +373,8 @@ def signals():
 def ask():
     """Ask a question in plain English (?q= or JSON {"question": ...}); the AI agent answers with read-only SQL."""
     from denguewatch.agent.llm import NotConfigured
-    from denguewatch.agent.sql_agent import ask as agent_ask, limiter
+    from denguewatch.agent.sql_agent import ask as agent_ask
+    from denguewatch.agent.sql_agent import limiter
     body = request.get_json(silent=True) or {}
     question = (request.args.get("q") or body.get("question") or "").strip()
     if not question:
@@ -446,7 +447,7 @@ def schedule():
     from denguewatch.scheduler.runner import next_runs
     last = last_success()
     nxt = {r["job"]: r["next_run"] for r in next_runs()}
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     out = [{"job": job,
             "last_success": last[job].isoformat(timespec="minutes") if last[job] else None,
             "overdue": last[job] is None or now - last[job] > age,

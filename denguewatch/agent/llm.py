@@ -53,19 +53,46 @@ def pick_model(names: list[str]) -> str:
 
 
 # Models that hit a quota limit are skipped for a while (shared by all clients in the app).
-# Free-tier limits are per model, so moving to another model usually works.
+# Free-tier limits are per model, so moving to another model usually works. Long cool-downs
+# (a used-up daily quota) are saved to a small file, so the next run or app start skips those
+# models straight away instead of asking each one again.
+COOLDOWN_FILE = config.PROCESSED_DIR / "llm_cooldown.json"
 _cooldown: dict[str, float] = {}
 _cool_lock = threading.Lock()
+_loaded = False
+
+
+def _load_cooldowns() -> None:
+    global _loaded
+    if _loaded or COOLDOWN_FILE is None:
+        return
+    _loaded = True
+    try:
+        saved = json.loads(COOLDOWN_FILE.read_text(encoding="utf-8"))
+        now = time.time()
+        _cooldown.update({k: float(v) for k, v in saved.items() if float(v) > now})
+    except (OSError, ValueError, AttributeError):
+        pass
 
 
 def _cool(name: str, seconds: float) -> None:
     with _cool_lock:
-        _cooldown[name] = time.monotonic() + seconds
+        _load_cooldowns()
+        _cooldown[name] = time.time() + seconds
+        if seconds >= 3600 and COOLDOWN_FILE is not None:
+            try:
+                now = time.time()
+                COOLDOWN_FILE.parent.mkdir(parents=True, exist_ok=True)
+                COOLDOWN_FILE.write_text(json.dumps({k: v for k, v in _cooldown.items() if v > now + 600},
+                                                    indent=1), encoding="utf-8")
+            except OSError:
+                log.debug("Could not save model cool-downs")
 
 
 def _cooling(name: str) -> bool:
     with _cool_lock:
-        return _cooldown.get(name, 0) > time.monotonic()
+        _load_cooldowns()
+        return _cooldown.get(name, 0) > time.time()
 
 
 def _daily_quota(resp) -> bool:

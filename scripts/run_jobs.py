@@ -11,7 +11,7 @@
 import argparse
 import logging
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -22,7 +22,7 @@ ORDER = ["weekly_reports", "daily_update", "monthly_retrain", "news_signals"]
 
 
 def show_status() -> None:
-    last, now = last_success(), datetime.now(timezone.utc)
+    last, now = last_success(), datetime.now(UTC)
     print(f"{'job':<17}{'last success':<22}due?")
     for job, age in MAX_AGE.items():
         ts = last[job]

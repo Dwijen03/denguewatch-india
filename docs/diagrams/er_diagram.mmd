@@ -1,4 +1,5 @@
 erDiagram
+  %% Log tables pipeline_runs and agent_queries have no foreign keys and are not drawn.
   STATES ||--o{ DISTRICTS : contains
   DISTRICTS ||--o{ DISTRICT_ALIASES : "known as"
   STATES ||--o{ OUTBREAKS : "reported in"
@@ -99,6 +100,11 @@ erDiagram
     timestamptz published_at
     text headline
     text url UK
+    varchar source
+    boolean is_relevant
+    varchar district_name_raw
     int extracted_cases
-    varchar verification_status
+    int extracted_deaths
+    numeric confidence
+    varchar verification_status "unverified, matches_idsp"
   }

@@ -136,6 +136,7 @@ def _jsonable(df: pd.DataFrame) -> list[dict]:
 
 
 def _log(engine: Engine, question: str, res: dict) -> None:
+    message = ((res.get("message") or "") + (f" [model {res['model']}]" if res.get("model") else "")).strip() or None
     try:
         with engine.begin() as conn:
             conn.execute(text("""INSERT INTO agent_queries (question, sql_text, status, rows_returned, attempts,
@@ -143,7 +144,7 @@ def _log(engine: Engine, question: str, res: dict) -> None:
                                  VALUES (:q, :s, :st, :n, :a, :ms, :m)"""),
                          {"q": question[:MAX_QUESTION], "s": res.get("sql"), "st": res["status"],
                           "n": len(res.get("rows") or []) if res["status"] == "answered" else None,
-                          "a": res.get("attempts"), "ms": res.get("duration_ms"), "m": (res.get("message") or "") + (f" [model {res.get('model')}]" if res.get("model") else "") or None})
+                          "a": res.get("attempts"), "ms": res.get("duration_ms"), "m": message})
     except Exception:  # noqa: BLE001 - logging must never break an answer
         log.exception("Could not log agent query")
 

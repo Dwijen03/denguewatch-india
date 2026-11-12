@@ -153,6 +153,9 @@ def clean_rows(raw: pd.DataFrame, matcher: DistrictMatcher | None = None) -> pd.
             reasons.append("start date missing/invalid")
         elif not (week_start - timedelta(days=365) <= start <= week_end + timedelta(days=7)):
             reasons.append("start date outside plausible range")
+        if start and reporting and reporting < start:
+            # Typo in one of the two dates in the PDF (0.2% of rows); the start date is still used.
+            reasons.append("reporting date before start date (source inconsistency)")
 
         disease = str(r.disease_raw)
         notes = r.notes if isinstance(r.notes, str) else ""

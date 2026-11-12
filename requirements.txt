@@ -1,6 +1,6 @@
 # DengueWatch India - Python dependencies
 # Install with:  pip install -r requirements.txt
-# Exact versions will be pinned (pip freeze) at the end of the project.
+# Exact versions used for the final evaluation are in requirements-lock.txt (written by system_check.bat).
 
 # --- Data collection & processing ---
 requests>=2.31
@@ -31,5 +31,7 @@ sqlglot>=25.0
 APScheduler>=3.10,<4
 python-dotenv>=1.0
 
-# --- Testing ---
+# --- Testing & code quality ---
 pytest>=8.0
+pytest-cov>=5.0
+ruff>=0.6

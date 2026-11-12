@@ -14,9 +14,9 @@ from __future__ import annotations
 import logging
 import threading
 import time
-from datetime import datetime, timedelta, timezone
+from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Callable
 
 import pandas as pd
 from sqlalchemy import text
@@ -239,6 +239,6 @@ def last_success(engine: Engine | None = None) -> dict[str, datetime | None]:
 
 def due_jobs(now: datetime | None = None, engine: Engine | None = None) -> list[str]:
     """Jobs whose last successful run is older than MAX_AGE (in run order)."""
-    now = now or datetime.now(timezone.utc)
+    now = now or datetime.now(UTC)
     last = last_success(engine)
     return [job for job, age in MAX_AGE.items() if last[job] is None or now - last[job] > age]

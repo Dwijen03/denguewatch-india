@@ -2,14 +2,13 @@
 retraining safeguard and the scheduler itself. None of these need the internet."""
 
 from contextlib import contextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pandas as pd
 import pytest
 
 from denguewatch.ingestion.reports import ReportRef
 from denguewatch.scheduler import jobs, runner
-
 
 # ---------------------------------------------------------------- incremental ingestion
 
@@ -113,7 +112,7 @@ def test_failed_job_does_not_crash(monkeypatch):
 
 
 def test_due_jobs(monkeypatch):
-    now = datetime(2026, 11, 12, 9, 0, tzinfo=timezone.utc)
+    now = datetime(2026, 11, 12, 9, 0, tzinfo=UTC)
     monkeypatch.setattr(jobs, "last_success", lambda engine=None: {
         "daily_update": now - timedelta(hours=30),     # overdue (> 20 h)
         "weekly_reports": now - timedelta(days=2),     # fine

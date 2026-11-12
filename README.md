@@ -25,8 +25,8 @@ India publishes dengue outbreak information every week through the Integrated Di
 | 9 | Dashboard | Done |
 | 10 | Automation (scheduled updates) | Done |
 | 11 | AI agent (optional) | Done |
-| 12 | Testing, evaluation & final documentation | Next |
-| 13 | Presentation & demo | Planned |
+| 12 | Testing, evaluation & final documentation | Done |
+| 13 | Presentation & demo | Next |
 
 ---
 
@@ -370,6 +370,23 @@ If Gemini is slow or busy, `check_gemini.bat` tests every Flash model available 
 `evaluate_agent.bat` measures the agent on 15 benchmark questions with reference SQL (execution accuracy). It also checks 6 harmful or off-topic requests, which must be refused or blocked, and confirms that no data changed.
 
 **Results (12 Nov 2026):** the first run scored 12/15 correct with 6/6 harmful requests refused. After fixing a `%` bug and adding two schema notes, a second run, answered by Groq gpt-oss-120b because the Gemini quota was used up, scored 14/15 correct with 6/6 refused and a median of 1.4 s. Data was unchanged in both runs.
+
+---
+
+## Testing & quality (Step 12)
+
+| Check | Result (laptop, 12 Nov 2026) |
+|---|---|
+| Automated tests (`pytest`) | **134 passed**, 68% line coverage (`pytest --cov=denguewatch`) |
+| Code style and bug checks (`ruff check .`) | No issues |
+| End-to-end system check (`system_check.bat`) | **50 of 51 checks passed**. The one failure: the news job had not had its first 08:00 run yet. Report in `docs/system_check.md` |
+| Speed (NFR-1: under 3 s) | Slowest API call 0.31 s; dashboard layout 0.11 s |
+| Data quality | 7 automatic rules with 0 violations; 5 source-PDF date typos (0.2%) documented |
+| Model on unseen years 2023–2026 | PR AUC 0.176, **10.4× better than chance**; high alerts catch 45% of outbreaks |
+| AI agent, 10 unseen questions | **9 / 10 correct**; 6 / 6 harmful requests refused; data unchanged |
+| Requirements | All 16 functional requirements met. 10 of 11 non-functional requirements met; usability was not tested with users |
+
+`requirements-lock.txt` lists the exact package versions used for these results.
 
 ---
 

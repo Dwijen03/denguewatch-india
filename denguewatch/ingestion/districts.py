@@ -18,7 +18,7 @@ from __future__ import annotations
 import csv
 import re
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 
 from rapidfuzz import fuzz, process
@@ -93,7 +93,7 @@ class DistrictMatcher:
                 return self._result(choices[best[0]], "fuzzy", best[1])
         return None
 
-    @lru_cache(maxsize=None)
+    @cache
     def match(self, state: str | None, district_raw: str | None) -> DistrictMatch:
         raw = district_raw or ""
         key = district_key(raw)
