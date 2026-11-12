@@ -24,6 +24,9 @@ lightgbm>=4.3
 joblib>=1.3
 matplotlib>=3.8
 
+# --- AI agent (Step 11) ---
+sqlglot>=25.0
+
 # --- Automation & configuration ---
 APScheduler>=3.10,<4
 python-dotenv>=1.0

@@ -5,6 +5,7 @@
     python scripts/run_jobs.py --job daily_update      # force one job
     python scripts/run_jobs.py --job weekly_reports
     python scripts/run_jobs.py --job monthly_retrain
+    python scripts/run_jobs.py --job news_signals      # AI news agent (Step 11)
 """
 
 import argparse
@@ -17,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from denguewatch.scheduler.jobs import JOBS, MAX_AGE, due_jobs, last_success, mark_interrupted, run_job  # noqa: E402
 
-ORDER = ["weekly_reports", "daily_update", "monthly_retrain"]
+ORDER = ["weekly_reports", "daily_update", "monthly_retrain", "news_signals"]
 
 
 def show_status() -> None:

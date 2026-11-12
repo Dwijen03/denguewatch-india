@@ -117,7 +117,8 @@ def test_due_jobs(monkeypatch):
     monkeypatch.setattr(jobs, "last_success", lambda engine=None: {
         "daily_update": now - timedelta(hours=30),     # overdue (> 20 h)
         "weekly_reports": now - timedelta(days=2),     # fine
-        "monthly_retrain": None})                      # never ran
+        "monthly_retrain": None,                       # never ran
+        "news_signals": now - timedelta(hours=1)})     # fine
     assert jobs.due_jobs(now) == ["daily_update", "monthly_retrain"]
 
 
@@ -156,7 +157,7 @@ def test_scheduler_timetable(monkeypatch):
     sched = runner.start_scheduler(catch_up_delay=-1)       # no catch-up in tests
     try:
         nxt = {r["job"]: r["next_run"] for r in runner.next_runs()}
-        assert set(nxt) == {"daily_update", "weekly_reports", "monthly_retrain"}
+        assert set(nxt) == {"daily_update", "weekly_reports", "monthly_retrain", "news_signals"}
         assert nxt["daily_update"].endswith("06:30+05:30")    # India time
         weekly = sched.get_job("weekly_reports").next_run_time
         assert weekly.weekday() == 0 and weekly.hour == 7        # Monday 07:00

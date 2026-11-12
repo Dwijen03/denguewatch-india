@@ -148,7 +148,7 @@ def test_admin_refresh_with_token_starts_job(client, monkeypatch):
 @needs_db
 def test_schedule_endpoint(client):
     body = client.get("/api/v1/schedule").get_json()
-    assert {r["job"] for r in body["results"]} == {"daily_update", "weekly_reports", "monthly_retrain"}
+    assert {r["job"] for r in body["results"]} == {"daily_update", "weekly_reports", "monthly_retrain", "news_signals"}
     assert all(set(r) == {"job", "last_success", "overdue", "next_run"} for r in body["results"])
 
 

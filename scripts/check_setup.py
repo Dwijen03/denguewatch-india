@@ -28,6 +28,7 @@ PACKAGES = {
     "sklearn": "scikit-learn",
     "lightgbm": "lightgbm",
     "joblib": "joblib",
+    "sqlglot": "sqlglot",
     "apscheduler": "APScheduler",
     "dotenv": "python-dotenv",
     "pytest": "pytest",

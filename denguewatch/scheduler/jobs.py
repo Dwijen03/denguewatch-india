@@ -3,6 +3,7 @@
     daily_update      weather (NASA POWER + Open-Meteo) -> new risk scores        every morning
     weekly_reports    new IDSP PDFs only -> parse -> clean -> load -> risk scores  every Monday
     monthly_retrain   retrain the model; keep it only if it is not clearly worse  1st of the month
+    news_signals      AI news agent: unverified dengue reports from the news      every day (Step 11)
 
 The same functions are used by the in-app scheduler (runner.py), by scripts/run_jobs.py
 (Windows Task Scheduler) and by POST /api/v1/admin/refresh.
@@ -35,6 +36,7 @@ MAX_AGE = {
     "daily_update": timedelta(hours=20),
     "weekly_reports": timedelta(days=7),
     "monthly_retrain": timedelta(days=30),
+    "news_signals": timedelta(hours=20),
 }
 
 _locks: dict[str, threading.Lock] = {name: threading.Lock() for name in MAX_AGE}
@@ -165,10 +167,24 @@ def monthly_retrain(engine: Engine | None = None, train: Callable | None = None)
     return res
 
 
+def news_signals(engine: Engine | None = None) -> dict:
+    """Step 11 news agent (skipped quietly when no Gemini key is set)."""
+    from denguewatch.agent import news_agent
+    engine = engine or get_engine()
+    with pipeline_run("news_signals", engine) as run:
+        res = news_agent.run(engine=engine)
+        run["rows"] = res.get("relevant", 0)
+        run["message"] = (f"skipped: {res['skipped']}" if "skipped" in res else
+                          f"{res['new']} new articles, {res['relevant']} relevant, "
+                          f"{res['newly_matched_idsp']} matched IDSP")
+    return res
+
+
 JOBS: dict[str, Callable[..., dict]] = {
     "daily_update": daily_update,
     "weekly_reports": weekly_reports,
     "monthly_retrain": monthly_retrain,
+    "news_signals": news_signals,
 }
 
 
@@ -210,7 +226,7 @@ def last_success(engine: Engine | None = None) -> dict[str, datetime | None]:
     # Earlier manual runs (Steps 4-7) count as well.
     equivalents = {"daily_update": "update_weather", "weekly_reports": "load_database"}
     out = {}
-    for job, alt in [*equivalents.items(), ("monthly_retrain", None)]:
+    for job, alt in [*equivalents.items(), ("monthly_retrain", None), ("news_signals", None)]:
         times = [t for t in (done.get(job), done.get(alt)) if t is not None]
         out[job] = max(times) if times else None
     # The model trained by hand in Step 7 counts as a training run too.

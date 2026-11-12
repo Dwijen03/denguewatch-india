@@ -3,6 +3,7 @@
     daily_update     every day   06:30
     weekly_reports   Monday      07:00   (NCDC usually posts the new week's PDF early in the week)
     monthly_retrain  1st of month 07:30
+    news_signals     every day   08:00   (AI news agent, Step 11)
 
 A laptop is not always switched on at those times, so on start-up any job whose last
 successful run is too old (see jobs.MAX_AGE) is run once ("catch-up"), one after another.
@@ -27,6 +28,7 @@ SCHEDULE = {
     "daily_update": CronTrigger(hour=6, minute=30, timezone=TZ),
     "weekly_reports": CronTrigger(day_of_week="mon", hour=7, minute=0, timezone=TZ),
     "monthly_retrain": CronTrigger(day=1, hour=7, minute=30, timezone=TZ),
+    "news_signals": CronTrigger(hour=8, minute=0, timezone=TZ),
 }
 
 _scheduler: BackgroundScheduler | None = None
@@ -40,7 +42,7 @@ def catch_up() -> list[str]:
     except Exception:  # noqa: BLE001 - e.g. database not reachable yet
         log.exception("Could not check which jobs are due")
         return []
-    order = ["weekly_reports", "daily_update", "monthly_retrain"]
+    order = ["weekly_reports", "daily_update", "monthly_retrain", "news_signals"]
     jobs = sorted(jobs, key=order.index)
     log.info("Catch-up: %s", ", ".join(jobs) if jobs else "nothing overdue")
     for name in jobs:

@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 SCHEMA_SQL = config.PROJECT_ROOT / "database" / "schema.sql"
 REFERENCE = config.DATA_DIR / "reference"
-TABLES_IN_DROP_ORDER = ["predictions", "model_versions", "news_signals", "weather_daily", "outbreaks",
+TABLES_IN_DROP_ORDER = ["agent_queries", "predictions", "model_versions", "news_signals", "weather_daily", "outbreaks",
                         "reports", "diseases", "district_aliases", "districts", "states", "pipeline_runs"]
 
 
@@ -38,7 +38,7 @@ def create_schema(engine: Engine | None = None, reset: bool = False) -> None:
     engine = engine or get_engine()
     with engine.begin() as conn:
         if reset:
-            for view in ("v_district_year", "v_outbreaks", "v_weather_weekly"):
+            for view in ("v_risk_latest", "v_district_year", "v_outbreaks", "v_weather_weekly"):
                 conn.exec_driver_sql(f"DROP VIEW IF EXISTS {view} CASCADE")
             for table in TABLES_IN_DROP_ORDER:
                 conn.exec_driver_sql(f"DROP TABLE IF EXISTS {table} CASCADE")

@@ -146,6 +146,28 @@ CREATE TABLE IF NOT EXISTS news_signals (
     extracted_cases      INTEGER CHECK (extracted_cases >= 0),
     verification_status  VARCHAR(20) NOT NULL DEFAULT 'unverified'
 );
+-- Columns added in Step 11 (the news-signal agent)
+ALTER TABLE news_signals ADD COLUMN IF NOT EXISTS source            VARCHAR(120);
+ALTER TABLE news_signals ADD COLUMN IF NOT EXISTS is_relevant       BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE news_signals ADD COLUMN IF NOT EXISTS state_name_raw    VARCHAR(80);
+ALTER TABLE news_signals ADD COLUMN IF NOT EXISTS district_name_raw VARCHAR(120);
+ALTER TABLE news_signals ADD COLUMN IF NOT EXISTS extracted_deaths  INTEGER CHECK (extracted_deaths >= 0);
+ALTER TABLE news_signals ADD COLUMN IF NOT EXISTS confidence        NUMERIC(3,2) CHECK (confidence BETWEEN 0 AND 1);
+ALTER TABLE news_signals ADD COLUMN IF NOT EXISTS summary           TEXT;
+ALTER TABLE news_signals ADD COLUMN IF NOT EXISTS created_at        TIMESTAMPTZ NOT NULL DEFAULT now();
+
+-- Every question asked to the "Ask DengueWatch" agent, with the SQL it ran (audit log)
+CREATE TABLE IF NOT EXISTS agent_queries (
+    query_id     BIGSERIAL PRIMARY KEY,
+    asked_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    question     TEXT        NOT NULL,
+    sql_text     TEXT,
+    status       VARCHAR(20) NOT NULL CHECK (status IN ('answered', 'refused', 'blocked', 'failed')),
+    rows_returned INTEGER,
+    attempts     SMALLINT,
+    duration_ms  INTEGER,
+    message      TEXT
+);
 
 CREATE TABLE IF NOT EXISTS pipeline_runs (
     run_id       BIGSERIAL PRIMARY KEY,
@@ -213,3 +235,14 @@ SELECT district_id,
        BOOL_OR(data_type = 'forecast')    AS includes_forecast
 FROM weather_daily
 GROUP BY district_id, date_trunc('week', obs_date);
+
+-- Latest risk per district from the active model (used by the AI agent, Step 11)
+CREATE OR REPLACE VIEW v_risk_latest AS
+SELECT s.state_name, d.district_name, d.census_code,
+       p.target_week_start, p.target_week_start + 27 AS target_week_end,
+       p.risk_score::float AS risk_score, p.risk_level
+FROM predictions p
+JOIN model_versions m ON m.model_id = p.model_id AND m.is_active
+JOIN districts d      ON d.district_id = p.district_id
+JOIN states s         ON s.state_id = d.state_id
+WHERE p.target_week_start = (SELECT MAX(target_week_start) FROM predictions WHERE model_id = m.model_id);

@@ -354,13 +354,40 @@ def pipeline_runs():
 
 @api.get("/signals")
 def signals():
-    """Unverified news-based signals from the optional AI agent (Step 11)."""
+    """Unverified dengue reports found in the news by the AI news agent (Step 11). ?all=1 includes irrelevant."""
     limit, offset = paging()
-    df = sql("""SELECT n.signal_id, n.published_at, n.headline, n.url, n.extracted_cases, n.verification_status,
-                       d.district_name, d.census_code
+    df = sql("""SELECT n.signal_id, n.published_at, n.headline, n.source, n.url, s.state_name,
+                       d.district_name, d.census_code, n.state_name_raw, n.district_name_raw,
+                       n.extracted_cases, n.extracted_deaths, n.confidence::float AS confidence, n.summary,
+                       n.is_relevant, n.verification_status
                 FROM news_signals n LEFT JOIN districts d USING (district_id)
-                ORDER BY n.published_at DESC NULLS LAST LIMIT :limit OFFSET :offset""", limit=limit, offset=offset)
-    return jsonify({"note": "Unverified signals - not official IDSP data", "count": len(df), "results": records(df)})
+                LEFT JOIN states s ON s.state_id = d.state_id
+                WHERE (n.is_relevant OR :all)
+                ORDER BY n.published_at DESC NULLS LAST LIMIT :limit OFFSET :offset""",
+             all=request.args.get("all") == "1", limit=limit, offset=offset)
+    return jsonify({"note": "Unverified signals from news headlines - not official IDSP data",
+                    "count": len(df), "results": records(df)})
+
+
+@api.route("/ask", methods=["GET", "POST"])
+def ask():
+    """Ask a question in plain English (?q= or JSON {"question": ...}); the AI agent answers with read-only SQL."""
+    from denguewatch.agent.llm import NotConfigured
+    from denguewatch.agent.sql_agent import ask as agent_ask, limiter
+    body = request.get_json(silent=True) or {}
+    question = (request.args.get("q") or body.get("question") or "").strip()
+    if not question:
+        raise ApiError(400, "Give a question: /api/v1/ask?q=Which districts had the most outbreaks in 2025?")
+    if len(question) > 300:
+        raise ApiError(400, "Questions are limited to 300 characters")
+    if not limiter.allow():
+        raise ApiError(429, "Too many questions - please wait a minute (protects the free AI quota)")
+    try:
+        res = agent_ask(question)
+    except NotConfigured as exc:
+        raise ApiError(503, str(exc)) from exc
+    res["note"] = "AI-generated query and summary - check the SQL and numbers before relying on them"
+    return jsonify(res)
 
 
 # ------------------------------------------------------------------ export
@@ -408,6 +435,7 @@ JOBS = {
     "daily": _scheduled("daily_update"),        # Step 10 jobs
     "reports": _scheduled("weekly_reports"),
     "retrain": _scheduled("monthly_retrain"),
+    "news": _scheduled("news_signals"),         # Step 11
 }
 
 
@@ -428,7 +456,7 @@ def schedule():
 
 @api.post("/admin/refresh")
 def admin_refresh():
-    """Start a background job (?job=predict|weather|weather_recent|daily|reports|retrain).
+    """Start a background job (?job=predict|weather|weather_recent|daily|reports|retrain|news).
     Needs header X-Admin-Token."""
     token = request.headers.get("X-Admin-Token", "")
     if not config.ADMIN_TOKEN or token != config.ADMIN_TOKEN:

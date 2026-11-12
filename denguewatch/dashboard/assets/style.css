@@ -55,8 +55,29 @@ body { margin: 0; background: var(--surface); color: var(--text);
 .note { color: var(--text-3); font-size: 12px; margin-top: 10px; line-height: 1.5; }
 a { color: var(--accent); }
 
+/* Ask AI (Step 11) */
+.ask-row { display: flex; gap: 10px; margin: 6px 0 10px; }
+.ask-input { flex: 1; min-width: 0; padding: 10px 12px; font-size: 14px; border: 1px solid var(--border);
+             border-radius: 8px; font-family: inherit; }
+.ask-input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+.ask-button { padding: 10px 22px; border: none; border-radius: 8px; background: var(--accent); color: white;
+              font-weight: 600; font-size: 14px; cursor: pointer; }
+.ask-button:hover { filter: brightness(0.93); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.chip { padding: 6px 12px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface);
+        color: var(--text-2); font-size: 12.5px; cursor: pointer; font-family: inherit; }
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.ask-output { min-height: 40px; margin-top: 8px; }
+.answer { font-size: 15px; line-height: 1.55; margin: 10px 0 4px; }
+.answer.warn { color: #8f2020; }
+details.sql { margin-top: 10px; }
+details.sql summary { cursor: pointer; color: var(--accent); font-size: 13px; }
+details.sql pre { background: #f6f6f3; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px;
+                  white-space: pre-wrap; font-size: 12.5px; overflow-x: auto; }
+
 @media (max-width: 900px) {
   .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .grid-2, .grid-2-even { grid-template-columns: minmax(0, 1fr); }
   .freshness { text-align: left; }
+  .ask-row { flex-direction: column; }
 }

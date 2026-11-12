@@ -24,8 +24,8 @@ India publishes dengue outbreak information every week through the Integrated Di
 | 8 | Flask REST API | Done |
 | 9 | Dashboard | Done |
 | 10 | Automation (scheduled updates) | Done |
-| 11 | AI agent (optional) | Next |
-| 12 | Testing, evaluation & final documentation | Planned |
+| 11 | AI agent (optional) | Done |
+| 12 | Testing, evaluation & final documentation | Next |
 | 13 | Presentation & demo | Planned |
 
 ---
@@ -65,6 +65,7 @@ denguewatch-india/
 │   ├── ml/                 # Features, training, validation, risk scoring
 │   ├── api/                # REST API endpoints
 │   ├── dashboard/          # Dash pages
+│   ├── agent/              # AI agents: Ask DengueWatch (question -> safe SQL) and news signals
 │   └── scheduler/          # Automatic jobs (jobs.py) and timetable (runner.py)
 ├── database/               # SQL schema and query scripts
 ├── data/
@@ -285,6 +286,7 @@ Double-click `start_app.bat` (or run `python run.py`), then open <http://localho
 | **District explorer** | One district: current risk, history, weekly outbreaks against rainfall and minimum temperature (forecast weeks shaded), risk trend, reasons and CSV download |
 | **Compare districts & years** | District × year heatmap, month of onset and outbreaks per year for any state and period |
 | **Model & data** | Accuracy on unseen years, model comparison, warning lead time, limitations and recent data updates |
+| **Ask AI** | Ask questions in plain English (answered with read-only SQL) and unverified dengue news signals (Step 11) |
 
 ![Risk this week](docs/screenshots/dashboard_risk.png)
 
@@ -325,6 +327,49 @@ The data keeps itself up to date. Three jobs, each logged in the `pipeline_runs`
 The API has `GET /api/v1/schedule`, and `POST /api/v1/admin/refresh?job=daily|reports|retrain` starts a job by hand.
 
 ![Automatic updates](docs/screenshots/dashboard_automatic_updates.png)
+
+---
+
+## AI agents (Step 11)
+
+Two agents use Google Gemini, which has a free API key. **Groq**, also free, is an automatic back-up: if Gemini's first try fails (busy or out of quota), the request goes straight to Groq's `openai/gpt-oss-120b`, so answers stay fast.
+
+**1. Ask DengueWatch.** Type a question in plain English, on the **Ask AI** tab or at `/api/v1/ask?q=...`.
+
+- Gemini writes one SQL query.
+- The app checks the query and runs it read-only.
+- Gemini then summarises the rows in 1–3 sentences.
+- The SQL and the rows are always shown, so every answer can be checked.
+- If the query fails, the error goes back to Gemini for one corrected attempt.
+
+| Guardrail | How |
+|---|---|
+| Read-only | Only one `SELECT` statement is allowed (checked with the sqlglot SQL parser). It runs in a `READ ONLY` transaction, so PostgreSQL itself refuses writes |
+| Limited scope | Only 8 views/tables, with no system catalogs and no `pg_*`, `dblink` or file functions |
+| Bounded cost | 5-second time limit, at most 200 rows, questions up to 300 characters, 10 questions per minute |
+| Audit | Every question, its SQL and its status are logged in `agent_queries` |
+| Honest output | The summary may use only the returned rows, and the UI labels answers as AI-generated |
+
+**2. News-signal agent.** Runs every morning at 08:00, as part of the Step 10 scheduler.
+
+- Reads Google News headlines about dengue in India.
+- Gemini extracts the place and the case and death counts as fixed JSON fields. Numbers are range-checked.
+- The place is matched to a Census district, and the result is stored in `news_signals`, marked **unverified**.
+- Signals are never mixed with IDSP data or used by the model.
+- A signal is marked *Later in IDSP* when IDSP lists an outbreak in the same district within 30 days. This measures how useful the news is as an early warning.
+
+**Setup.**
+
+1. Get a free key at <https://aistudio.google.com/apikey>.
+2. Run `setup_agent.bat` and paste the key. It is saved only in `.env`, and the screen is cleared afterwards.
+   Optional back-up: get a free key at <https://console.groq.com/keys> and run `setup_agent.bat --groq`.
+3. The same script adds the Step 11 tables and asks a test question.
+
+If Gemini is slow or busy, `check_gemini.bat` tests every Flash model available to your key and saves the fastest in `.env`. When a model is overloaded the agent switches to a back-up model automatically.
+
+`evaluate_agent.bat` measures the agent on 15 benchmark questions with reference SQL (execution accuracy). It also checks 6 harmful or off-topic requests, which must be refused or blocked, and confirms that no data changed.
+
+**Results (12 Nov 2026):** the first run scored 12/15 correct with 6/6 harmful requests refused. After fixing a `%` bug and adding two schema notes, a second run, answered by Groq gpt-oss-120b because the Gemini quota was used up, scored 14/15 correct with 6/6 refused and a median of 1.4 s. Data was unchanged in both runs.
 
 ---
 

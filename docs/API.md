@@ -30,8 +30,9 @@ Base URL when running locally: `http://localhost:8050/api/v1`. Start the server 
 | GET | `/pipeline-runs` | Recent automated jobs and their status | `limit` |
 | GET | `/signals` | Unverified news signals from the optional agent (Step 11) | `limit`, `offset` |
 | GET | `/export/outbreaks.csv` | CSV download of outbreaks | `state`, `district_code`, `year` |
+| GET, POST | `/ask` | Ask a question in plain English; the AI agent answers with read-only SQL (Step 11) | `q` (or JSON `question`), max 300 characters; 10 per minute |
 | GET | `/schedule` | Automatic jobs: last success, overdue or not, next planned run | – |
-| POST | `/admin/refresh` | Start a background job | `job` = predict, weather, weather_recent, daily, reports or retrain; header `X-Admin-Token` |
+| POST | `/admin/refresh` | Start a background job | `job` = predict, weather, weather_recent, daily, reports, retrain or news; header `X-Admin-Token` |
 
 ## Examples
 
@@ -91,3 +92,18 @@ Measured on the full dataset: 2,224 outbreaks, 4.2 million daily weather rows an
 - Every endpoint answered in **under 0.1 s**.
 - `/health` is the slowest at about 0.09 s.
 - `/risk/current` for all 640 districts takes about 0.02 s.
+
+## Ask DengueWatch (Step 11)
+
+```
+curl "http://localhost:8050/api/v1/ask?q=Which%20state%20had%20the%20most%20outbreaks%20in%202025%3F"
+```
+
+The reply has `status` (answered / refused / blocked / failed), `answer`, the `sql` that ran, `columns`, `rows` (max 200), a suggested `chart` and `attempts`. The SQL written by the AI is checked before it runs:
+
+- one SELECT statement only
+- allowed views only
+- no system functions
+
+It then runs in a read-only transaction with a 5-second limit. Every question is logged in the `agent_queries` table. Errors: 400 for an empty or too-long question, 429 for too many questions, 503 if no Gemini key is set.
+

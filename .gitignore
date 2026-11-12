@@ -30,3 +30,7 @@ models/*.pkl
 # --- Logs ---
 *.log
 logs/
+
+# Update packages sent during development
+Step*_update.zip
+_to_delete/

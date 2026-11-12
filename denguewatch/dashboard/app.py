@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pandas as pd
 import plotly.graph_objects as go
-from dash import Dash, Input, Output, State, ctx, dash_table, dcc, html, no_update
+from dash import ALL, Dash, Input, Output, State, ctx, dash_table, dcc, html, no_update
 from flask import Flask
 from plotly.subplots import make_subplots
 
@@ -163,6 +163,8 @@ def create_dashboard(server: Flask) -> Dash:
                         selected_className="tab--selected", children=compare_page(states)),
                 dcc.Tab(label="Model & data", value="model", className="tab",
                         selected_className="tab--selected", children=model_page()),
+                dcc.Tab(label="Ask AI", value="ask", className="tab",
+                        selected_className="tab--selected", children=ask_page()),
             ]),
         ])
 
@@ -302,7 +304,7 @@ def create_dashboard(server: Flask) -> Dash:
         runs = (api("/pipeline-runs", limit=8) or {}).get("results", [])
         sched = api("/schedule") or {}
         labels = {"daily_update": "Weather + risk (daily)", "weekly_reports": "New IDSP reports (weekly)",
-                  "monthly_retrain": "Retrain model (monthly)"}
+                  "monthly_retrain": "Retrain model (monthly)", "news_signals": "AI news agent (daily)"}
 
         when = ist
         auto = [html.Li([html.B(labels.get(r["job"], r["job"])), f" · last {when(r['last_success'])}",
@@ -365,6 +367,122 @@ def create_dashboard(server: Flask) -> Dash:
                 ]),
             ]),
         ])
+
+    # ------------------------------------------------------------ Ask AI page (Step 11)
+    EXAMPLES = [
+        "Which 10 districts had the most dengue outbreaks since 2020?",
+        "How many outbreaks and cases were reported in Kerala each year?",
+        "In which month do outbreaks start most often in Maharashtra?",
+        "Which high-risk districts this week had outbreaks last year?",
+        "What was the weekly rainfall in Pune in the last 8 weeks?",
+    ]
+
+    def api_full(path: str, **params):
+        with api_app.test_client() as client:
+            resp = client.get(f"/api/v1{path}", query_string=params)
+        return resp.status_code, (resp.get_json(silent=True) or {})
+
+    def signals_card():
+        res = (api("/signals", limit=40) or {}).get("results", [])
+        status_label = {"unverified": "Unverified", "matches_idsp": "Later in IDSP"}
+        rows = [{"date": ist(r["published_at"])[:10] if r["published_at"] else "",
+                 "place": (nice(r["district_name"], r["state_name"]) if r["district_name"]
+                           else (r["district_name_raw"] or r["state_name_raw"] or "–")),
+                 "cases": r["extracted_cases"], "headline": f"[{r['headline']}]({r['url']})",
+                 "status": status_label.get(r["verification_status"], r["verification_status"])} for r in res]
+        body = (dash_table.DataTable(
+            data=rows, page_size=10, style_as_list_view=True, markdown_options={"link_target": "_blank"},
+            columns=[{"name": "Date", "id": "date"}, {"name": "Place", "id": "place"},
+                     {"name": "Cases", "id": "cases"}, {"name": "Headline", "id": "headline", "presentation": "markdown"},
+                     {"name": "Check", "id": "status"}],
+            style_header={"fontWeight": "600", "backgroundColor": "white"},
+            style_cell={"fontFamily": FONT["family"], "fontSize": 12.5, "textAlign": "left", "border": "none",
+                        "borderBottom": f"1px solid {GRID}", "whiteSpace": "normal", "height": "auto"},
+            style_cell_conditional=[{"if": {"column_id": "headline"}, "width": "48%"}])
+                if rows else html.P("No news signals yet. The news agent runs every morning once a Gemini key is set "
+                                    "(setup_agent.bat).", className="sub"))
+        return html.Div(className="card", children=[
+            html.H3("News signals (unverified)"),
+            html.P("Dengue reports found in news headlines by the AI news agent, days or weeks before IDSP. "
+                   "\"Later in IDSP\" means IDSP listed an outbreak in that district within 30 days.", className="sub"),
+            body,
+            html.Div(className="note", children="Early hints only - never mixed with official IDSP data or used by the model."),
+        ])
+
+    def ask_page():
+        return html.Div([
+            html.Div(className="card", children=[
+                html.H3("Ask DengueWatch"),
+                html.P("Ask about outbreaks, cases, weather or current risk in plain English. An AI model (Google Gemini) "
+                       "writes a read-only SQL query, the app checks and runs it, and the AI summarises the result. "
+                       "If Gemini's free quota runs out, Groq is used as a back-up.",
+                       className="sub"),
+                html.Div(className="ask-row", children=[
+                    dcc.Input(id="ask-input", type="text", maxLength=300, debounce=False, className="ask-input",
+                              placeholder="e.g. Which districts in Tamil Nadu had the most cases in 2024?"),
+                    html.Button("Ask", id="ask-button", n_clicks=0, className="ask-button"),
+                ]),
+                html.Div(className="chips", children=[
+                    html.Button(q, id={"type": "ask-example", "index": i}, n_clicks=0, className="chip")
+                    for i, q in enumerate(EXAMPLES)]),
+                dcc.Loading(type="dot", color=BLUE, children=html.Div(id="ask-output", className="ask-output")),
+            ]),
+            html.Div(style={"marginTop": "14px"}, children=signals_card()),
+        ])
+
+    def render_answer(status: int, res: dict):
+        if status != 200:
+            msg = (res.get("error") or {}).get("message", "Something went wrong")
+            return html.Div(className="answer warn", children=msg)
+        badge = {"answered": "low", "refused": "medium", "blocked": "high", "failed": "high"}.get(res["status"], "low")
+        meta = [html.Span(res["status"].capitalize(), className=f"badge {badge}"),
+                f"  {len(res.get('rows') or [])} rows · {res.get('duration_ms', 0) / 1000:.1f} s"
+                + (f" · {res['attempts']} attempts" if res.get("attempts", 1) > 1 else "")
+                + (f" · AI: {res['model'].split('/', 1)[-1]}" if res.get("model") else "")]
+        parts = [html.Div(className="answer", children=res.get("answer") or ""), html.Div(className="sub", children=meta)]
+        rows, cols = res.get("rows") or [], res.get("columns") or []
+        chart = res.get("chart") or {}
+        if (rows and len(rows) > 1 and isinstance(chart, dict) and chart.get("type") in ("bar", "line")
+                and chart.get("x") in cols and chart.get("y") in cols):
+            df = pd.DataFrame(rows)
+            if pd.api.types.is_numeric_dtype(pd.to_numeric(df[chart["y"]], errors="coerce")):
+                y = pd.to_numeric(df[chart["y"]], errors="coerce")
+                trace = (go.Bar(x=df[chart["x"]].astype(str), y=y, marker_color=BLUE) if chart["type"] == "bar"
+                         else go.Scatter(x=df[chart["x"]], y=y, mode="lines+markers", line=dict(color=BLUE, width=2)))
+                fig = base_layout(go.Figure(trace), 300, xaxis_title=chart["x"], yaxis_title=chart["y"])
+                parts.append(dcc.Graph(figure=fig, config={"displayModeBar": False}))
+        if rows:
+            parts.append(dash_table.DataTable(
+                data=rows, columns=[{"name": c, "id": c} for c in cols], page_size=10, style_as_list_view=True,
+                style_table={"overflowX": "auto"}, style_header={"fontWeight": "600", "backgroundColor": "white"},
+                style_cell={"fontFamily": FONT["family"], "fontSize": 12.5, "textAlign": "left", "border": "none",
+                            "borderBottom": f"1px solid {GRID}"}))
+        if res.get("sql"):
+            parts.append(html.Details(className="sql", children=[
+                html.Summary("Show the SQL query"),
+                html.P(res.get("explanation") or "", className="sub"),
+                html.Pre(res["sql"])]))
+        if res.get("message") and res["status"] != "answered":
+            parts.append(html.Div(className="note", children=res["message"]))
+        parts.append(html.Div(className="note", children="AI-generated - check the query and numbers before relying on them."))
+        return html.Div(parts)
+
+    @app.callback(Output("ask-output", "children"), Output("ask-input", "value"),
+                  Input("ask-button", "n_clicks"), Input("ask-input", "n_submit"),
+                  Input({"type": "ask-example", "index": ALL}, "n_clicks"), State("ask-input", "value"),
+                  prevent_initial_call=True)
+    def run_ask(_clicks, _submit, _examples, typed):
+        trigger = ctx.triggered_id
+        if isinstance(trigger, dict):                      # an example question was clicked
+            if not any(_examples):
+                return no_update, no_update
+            question = EXAMPLES[trigger["index"]]
+        else:
+            question = (typed or "").strip()
+        if not question:
+            return html.Div(className="answer warn", children="Type a question first."), no_update
+        status, res = api_full("/ask", q=question)
+        return render_answer(status, res), question
 
     app.layout = serve_layout
 
