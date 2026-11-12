@@ -320,6 +320,7 @@ def model_info():
     m = row.pop("test_metrics") or {}
     if isinstance(m, str):
         m = json.loads(m)
+    row["train_period"] = m.get("train_period", row["train_period"])  # full text (DB column is shortened)
     row["evaluation"] = {k: m.get(k) for k in ("test_period", "test_base_rate", "test_pr_auc", "test_roc_auc",
                                               "high_alert", "medium_or_high_alert", "warned", "comparison",
                                               "importance_by_group", "thresholds")}

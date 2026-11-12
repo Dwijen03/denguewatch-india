@@ -1,0 +1,62 @@
+/* DengueWatch India dashboard - design tokens and layout */
+:root {
+  --surface: #fcfcfb;
+  --card: #ffffff;
+  --border: #e4e3df;
+  --text: #0b0b0b;
+  --text-2: #52514e;
+  --text-3: #7a7974;
+  --accent: #2a78d6;
+  --high: #d03b3b;
+  --medium: #fab219;
+  --low: #d9d8d3;
+  --radius: 10px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--surface); color: var(--text);
+       font-family: "Segoe UI", Inter, Arial, sans-serif; font-size: 14px; }
+.page { max-width: 1320px; margin: 0 auto; padding: 16px 20px 40px; }
+
+/* header */
+.header { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;
+          padding: 8px 0 14px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+.brand h1 { margin: 0; font-size: 24px; letter-spacing: -0.2px; }
+.brand p { margin: 4px 0 0; color: var(--text-2); }
+.freshness { color: var(--text-2); font-size: 12.5px; text-align: right; line-height: 1.5; }
+
+/* tabs */
+.tabs-container { margin-bottom: 14px; }
+.tab { padding: 10px 16px !important; border: none !important; border-bottom: 2px solid transparent !important;
+       background: transparent !important; color: var(--text-2) !important; font-weight: 500; }
+.tab--selected { color: var(--text) !important; border-bottom: 2px solid var(--accent) !important; }
+
+/* filters */
+.filters { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin: 4px 0 14px; }
+.filter { display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
+.filter label, .label { font-size: 12px; color: var(--text-2); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+
+/* cards and tiles */
+.grid { display: grid; gap: 14px; }
+.grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.grid-2 { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+.grid-2-even { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+.card h3 { margin: 0 0 4px; font-size: 15px; }
+.card .sub { margin: 0 0 8px; color: var(--text-2); font-size: 12.5px; }
+.tile .value { font-size: 28px; font-weight: 650; line-height: 1.1; margin-top: 4px; }
+.tile .hint { color: var(--text-2); font-size: 12.5px; margin-top: 4px; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.dot.high { background: var(--high); } .dot.medium { background: var(--medium); } .dot.low { background: var(--low); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.badge.high { background: #fbe7e7; color: #8f2020; } .badge.medium { background: #fff2d6; color: #7a5200; }
+.badge.low { background: #efeee9; color: var(--text-2); }
+.reasons { margin: 6px 0 0; padding-left: 18px; color: var(--text-2); }
+.reasons li { margin: 3px 0; }
+.note { color: var(--text-3); font-size: 12px; margin-top: 10px; line-height: 1.5; }
+a { color: var(--accent); }
+
+@media (max-width: 900px) {
+  .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-2, .grid-2-even { grid-template-columns: minmax(0, 1fr); }
+  .freshness { text-align: left; }
+}

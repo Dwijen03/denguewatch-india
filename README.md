@@ -22,8 +22,8 @@ India publishes dengue outbreak information every week through the Integrated Di
 | 6 | Weather data integration | Done |
 | 7 | AI/ML early-warning model | Done |
 | 8 | Flask REST API | Done |
-| 9 | Dashboard | Next |
-| 10 | Automation (scheduled updates) | Planned |
+| 9 | Dashboard | Done |
+| 10 | Automation (scheduled updates) | Next |
 | 11 | AI agent (optional) | Planned |
 | 12 | Testing, evaluation & final documentation | Planned |
 | 13 | Presentation & demo | Planned |
@@ -68,7 +68,7 @@ denguewatch-india/
 │   └── scheduler/          # Automated jobs
 ├── database/               # SQL schema and query scripts
 ├── data/
-│   ├── reference/          # Census 2011 district list + name aliases
+│   ├── reference/          # Census 2011 districts, name aliases, map boundaries
 │   ├── raw/                # Downloaded PDFs (not committed)
 │   ├── processed/          # Intermediate files (not committed)
 │   └── sample/             # Small sample data (committed)
@@ -272,6 +272,27 @@ Start the server with `python run.py` (or `start_app.bat`), then open <http://lo
 | [`/api/v1/export/outbreaks.csv?state=Kerala`](http://localhost:8050/api/v1/export/outbreaks.csv?state=Kerala) | CSV download |
 
 **Behaviour:** all parameters are validated, errors come back as JSON, every query is parameterised, and each response arrives in under 0.1 s.
+
+---
+
+## Dashboard (Step 9)
+
+Double-click `start_app.bat` (or run `python run.py`), then open <http://localhost:8050/dashboard/>.
+
+| Page | What it shows |
+|---|---|
+| **Risk this week** | District risk map, high/medium/low counts and the districts to watch with their reasons. Filter by state; click a district to open it |
+| **District explorer** | One district: current risk, history, weekly outbreaks against rainfall and minimum temperature (forecast weeks shaded), risk trend, reasons and CSV download |
+| **Compare districts & years** | District × year heatmap, month of onset and outbreaks per year for any state and period |
+| **Model & data** | Accuracy on unseen years, model comparison, warning lead time, limitations and recent data updates |
+
+![Risk this week](docs/screenshots/dashboard_risk.png)
+
+**How it is built:**
+
+- Every number comes through the REST API.
+- The map uses Census 2011 boundaries and needs no internet map tiles.
+- Risk levels are always shown with a text label as well as a colour.
 
 ---
 
