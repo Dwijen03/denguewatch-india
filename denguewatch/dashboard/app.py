@@ -190,8 +190,10 @@ def create_dashboard(server: Flask) -> Dash:
                     html.H3("Districts to watch"),
                     html.P("Highest risk first. Reasons are the factors that raised each district's score.",
                            className="sub"),
+                    dcc.Store(id="risk-rows"),
                     dash_table.DataTable(
-                        id="risk-table", page_size=14, sort_action="native", style_as_list_view=True,
+                        id="risk-table", page_size=14, sort_action="custom", sort_mode="single", sort_by=[],
+                        style_as_list_view=True,
                         columns=[{"name": "District", "id": "district"}, {"name": "State", "id": "state"},
                                  {"name": "Risk", "id": "level"}, {"name": "Score", "id": "score"},
                                  {"name": "Main reasons", "id": "reasons"}],
@@ -367,7 +369,7 @@ def create_dashboard(server: Flask) -> Dash:
     app.layout = serve_layout
 
     # ------------------------------------------------------------ callbacks: risk page
-    @app.callback(Output("risk-tiles", "children"), Output("risk-map", "figure"), Output("risk-table", "data"),
+    @app.callback(Output("risk-tiles", "children"), Output("risk-map", "figure"), Output("risk-rows", "data"),
                   Output("risk-window", "children"), Input("risk-state", "value"), Input("risk-levels", "value"))
     def update_risk(state, levels):
         res = api("/risk/current", state=state) or {}
@@ -413,6 +415,23 @@ def create_dashboard(server: Flask) -> Dash:
         window = (f"Risk that a new outbreak starts between {pd.Timestamp(win['from']):%d %b %Y} and "
                   f"{pd.Timestamp(win['to']):%d %b %Y}, based on weather up to the week before.")
         return tiles, fig, table, window
+
+    # Sorting the table: "Risk" sorts by severity (High > Medium), not alphabetically.
+    RANK = {LEVEL_LABEL["high"]: 2, LEVEL_LABEL["medium"]: 1, LEVEL_LABEL["low"]: 0}
+
+    @app.callback(Output("risk-table", "data"), Input("risk-rows", "data"), Input("risk-table", "sort_by"))
+    def sort_risk_table(rows, sort_by):
+        rows = list(rows or [])
+        if not sort_by:
+            return rows  # API order: highest score first
+        col, desc = sort_by[0]["column_id"], sort_by[0]["direction"] == "desc"
+        if col == "level":
+            key = lambda r: (RANK.get(r["level"], -1), r["score"])
+        elif col == "score":
+            key = lambda r: r["score"]
+        else:
+            key = lambda r: str(r.get(col) or "").lower()
+        return sorted(rows, key=key, reverse=desc)
 
     # map click / table click -> open district explorer
     @app.callback(Output("selected-district", "data"), Output("tabs", "value"),
