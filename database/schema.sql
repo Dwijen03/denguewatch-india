@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS outbreaks (
 );
 
 -- ---------------------------------------------------------------------
--- 3. Weather (filled in Step 6)
+-- 3. Weather (Step 6): NASA POWER history + Open-Meteo recent days and forecast
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS weather_daily (
     district_id       INTEGER     NOT NULL REFERENCES districts(district_id) ON DELETE CASCADE,
@@ -98,9 +98,13 @@ CREATE TABLE IF NOT EXISTS weather_daily (
     temp_max_c        NUMERIC(4,1),
     rel_humidity_pct  NUMERIC(4,1) CHECK (rel_humidity_pct BETWEEN 0 AND 100),
     data_type         VARCHAR(10) NOT NULL DEFAULT 'observed' CHECK (data_type IN ('observed', 'forecast')),
+    source            VARCHAR(20) NOT NULL DEFAULT 'nasa_power' CHECK (source IN ('nasa_power', 'open_meteo')),
     fetched_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY (district_id, obs_date)
 );
+-- (for databases created before Step 6)
+ALTER TABLE weather_daily ADD COLUMN IF NOT EXISTS source VARCHAR(20) NOT NULL DEFAULT 'nasa_power'
+    CHECK (source IN ('nasa_power', 'open_meteo'));
 
 -- ---------------------------------------------------------------------
 -- 4. Machine learning (filled in Step 7)

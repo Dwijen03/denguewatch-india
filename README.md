@@ -19,8 +19,8 @@ India publishes dengue outbreak information every week through the Integrated Di
 | 3 | Project setup | Done |
 | 4 | Data acquisition & cleaning | Done |
 | 5 | Database implementation | Done |
-| 6 | Weather data integration | Next |
-| 7 | AI/ML early-warning model | Planned |
+| 6 | Weather data integration | Done |
+| 7 | AI/ML early-warning model | Next |
 | 8 | Flask REST API | Planned |
 | 9 | Dashboard | Planned |
 | 10 | Automation (scheduled updates) | Planned |
@@ -195,10 +195,36 @@ python scripts/setup_database.py --reset   # drop and rebuild all tables
 
 ---
 
+## Weather (Step 6)
+
+```bash
+python scripts/update_weather.py --check      # test that both weather services answer
+python scripts/update_weather.py --limit 5    # trial run on 5 districts
+python scripts/update_weather.py              # full run (or double-click update_weather.bat)
+python scripts/update_weather.py --no-history # quick daily refresh: recent days + forecast
+```
+
+| Source | Used for | Why |
+|---|---|---|
+| [NASA POWER](https://power.larc.nasa.gov) | Daily history 2009 to a few days ago, for each of the 640 district centroids | One request returns the whole history for a point, about 640 requests in total |
+| [Open-Meteo](https://open-meteo.com) | Last 10 days and the 16-day forecast | Many districts per request. Its free limits (10,000 calls a day, 2 weeks of data = 1 call) rule it out for the full history |
+
+**Variables:** precipitation (mm), mean, minimum and maximum temperature (°C), and relative humidity (%), stored daily in `weather_daily`.
+
+**How the data is kept consistent:**
+
+- Each day keeps its most reliable value, in this order: NASA POWER, then Open-Meteo observed, then forecast.
+- The job can be resumed: it only downloads days that are still missing.
+- The first full run takes about 30–60 minutes and stores about 4.2 million rows (≈0.5 GB). After that, each run takes about a minute.
+- `v_weather_weekly` gives weekly totals, and the query `rainfall_before_outbreaks` links weather to outbreaks.
+
+---
+
 ## Data sources
 
 - **IDSP Weekly Outbreak Reports**, National Centre for Disease Control (NCDC): <https://ncdc.mohfw.gov.in/includes/WeeklyOutbreaks.php>
-- **Open-Meteo** historical and forecast weather API (free for non-commercial use): <https://open-meteo.com/>
+- **NASA POWER** daily point API (NASA Langley Research Center), weather history: <https://power.larc.nasa.gov/>
+- **Open-Meteo** forecast API (free for non-commercial use, CC BY 4.0): <https://open-meteo.com/>
 - **District boundaries**: DataMeet, *India - District Map* (Census 2011), CC BY 2.5 India: <https://github.com/datameet/maps>. Used to build `data/reference/districts.csv` with district centroids.
 
 ---
