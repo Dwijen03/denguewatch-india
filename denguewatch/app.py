@@ -1,33 +1,29 @@
 """Application factory: one Flask server hosting the REST API and the Dash dashboard.
 
-This is the Step 3 skeleton. The real endpoints arrive in Step 8 and the
-dashboard pages in Step 9.
+    /api/v1/...   REST API (denguewatch/api/routes.py)
+    /dashboard/   Dash dashboard (Step 9)
 """
 
 from dash import Dash, html
-from flask import Flask, jsonify, redirect
+from flask import Flask, jsonify, redirect, request
 
-from denguewatch import __version__
-from denguewatch.db.connection import check_connection
+from denguewatch.api.routes import api
 
 
 def create_app() -> Flask:
     server = Flask(__name__)
+    server.json.sort_keys = False  # keep fields in the order the API defines them
+    server.register_blueprint(api)
+
+    @server.errorhandler(404)
+    def not_found(err):
+        if request.path.startswith("/api/"):
+            return jsonify({"error": {"status": 404, "message": f"No endpoint {request.path} - see /api/v1/"}}), 404
+        return err
 
     @server.get("/")
     def index():
         return redirect("/dashboard/")
-
-    @server.get("/api/v1/health")
-    def health():
-        db_ok, db_message = check_connection()
-        return jsonify(
-            {
-                "service": "DengueWatch India API",
-                "version": __version__,
-                "database": {"connected": db_ok, "detail": db_message},
-            }
-        ), (200 if db_ok else 503)
 
     dash_app = Dash(__name__, server=server, url_base_pathname="/dashboard/", title="DengueWatch India")
     dash_app.layout = html.Div(
@@ -35,8 +31,9 @@ def create_app() -> Flask:
         children=[
             html.H1("DengueWatch India"),
             html.P("A weather-driven dengue early warning system for Indian districts."),
-            html.P("Setup complete. Dashboard pages will be added in Step 9."),
-            html.A("Check API health", href="/api/v1/health"),
+            html.P("The dashboard is added in Step 9. The REST API is live:"),
+            html.Ul([html.Li(html.A(p, href=p)) for p in
+                     ["/api/v1/", "/api/v1/health", "/api/v1/risk/current?level=high", "/api/v1/model"]]),
         ],
     )
     return server

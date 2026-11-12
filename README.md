@@ -21,8 +21,8 @@ India publishes dengue outbreak information every week through the Integrated Di
 | 5 | Database implementation | Done |
 | 6 | Weather data integration | Done |
 | 7 | AI/ML early-warning model | Done |
-| 8 | Flask REST API | Next |
-| 9 | Dashboard | Planned |
+| 8 | Flask REST API | Done |
+| 9 | Dashboard | Next |
 | 10 | Automation (scheduled updates) | Planned |
 | 11 | AI agent (optional) | Planned |
 | 12 | Testing, evaluation & final documentation | Planned |
@@ -255,6 +255,23 @@ python scripts/train_model.py --predict-only   # refresh risk scores with the ac
 **What matters most:** the minimum temperature over the last 4 weeks is the strongest signal. Weather carries 56% of the model's influence. Each stored prediction includes its top 3 reasons (SHAP).
 
 Charts are in [`docs/figures/`](docs/figures/). Trained models are saved to `models/` and registered in `model_versions`, and scores are written to `predictions`.
+
+---
+
+## REST API (Step 8)
+
+Start the server with `python run.py` (or `start_app.bat`), then open <http://localhost:8050/api/v1/>. There are 17 endpoints under `/api/v1`. The full reference with examples is in **[docs/API.md](docs/API.md)**.
+
+| Example | What you get |
+|---|---|
+| [`/api/v1/health`](http://localhost:8050/api/v1/health) | Database status and the latest report and weather dates |
+| [`/api/v1/risk/current?level=high`](http://localhost:8050/api/v1/risk/current?level=high) | High-risk districts for the next 4 weeks, with reasons |
+| [`/api/v1/districts/595`](http://localhost:8050/api/v1/districts/595) | Ernakulam: outbreak history and current risk |
+| [`/api/v1/outbreaks/summary?group_by=month&state=Kerala`](http://localhost:8050/api/v1/outbreaks/summary?group_by=month&state=Kerala) | Kerala outbreaks by month |
+| [`/api/v1/districts/521/timeline`](http://localhost:8050/api/v1/districts/521/timeline) | Pune: weekly outbreaks and weather |
+| [`/api/v1/export/outbreaks.csv?state=Kerala`](http://localhost:8050/api/v1/export/outbreaks.csv?state=Kerala) | CSV download |
+
+**Behaviour:** all parameters are validated, errors come back as JSON, every query is parameterised, and each response arrives in under 0.1 s.
 
 ---
 

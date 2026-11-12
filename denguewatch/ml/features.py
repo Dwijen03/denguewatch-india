@@ -50,7 +50,7 @@ FEATURE_GROUPS = {"weather": WEATHER_FEATURES, "season": SEASON_FEATURES,
 def week_start(dates) -> pd.Series:
     """Monday of the ISO week (the weeks IDSP uses)."""
     d = pd.to_datetime(pd.Series(dates))
-    return (d - pd.to_timedelta(d.dt.weekday, unit="D")).dt.normalize()
+    return (d - pd.to_timedelta(d.dt.day_of_week, unit="D")).dt.normalize()
 
 
 def _window_sum(arr: np.ndarray, lo: int, hi: int) -> np.ndarray:

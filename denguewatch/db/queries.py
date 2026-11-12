@@ -22,7 +22,7 @@ from denguewatch.db.connection import get_engine
 QUERIES_SQL = config.PROJECT_ROOT / "database" / "queries.sql"
 
 # Default values for optional parameters
-DEFAULTS = {"state": None, "district": None, "limit": 20, "min_years": 5, "top_n": 3}
+DEFAULTS = {"state": None, "district": None, "level": None, "limit": 20, "min_years": 5, "top_n": 3}
 
 
 @lru_cache(maxsize=1)

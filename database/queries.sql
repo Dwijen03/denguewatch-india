@@ -137,11 +137,14 @@ LIMIT :limit;
 
 -- name: current_risk
 -- Q10. Latest risk score for every district from the active model (filled in Step 7).
-SELECT s.state_name, d.district_name, p.target_week_start, p.risk_score, p.risk_level, p.top_factors
+SELECT s.state_name, d.district_name, d.census_code, d.latitude::float AS latitude, d.longitude::float AS longitude,
+       p.target_week_start, p.target_week_start + 27 AS target_week_end,
+       p.risk_score::float AS risk_score, p.risk_level, p.top_factors
 FROM predictions p
 JOIN model_versions m ON m.model_id = p.model_id AND m.is_active
 JOIN districts d      ON d.district_id = p.district_id
 JOIN states s         ON s.state_id = d.state_id
 WHERE p.target_week_start = (SELECT MAX(target_week_start) FROM predictions WHERE model_id = m.model_id)
   AND (CAST(:state AS TEXT) IS NULL OR s.state_name = :state)
+  AND (CAST(:level AS TEXT) IS NULL OR p.risk_level = :level)
 ORDER BY p.risk_score DESC;
