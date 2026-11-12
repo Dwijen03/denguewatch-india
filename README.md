@@ -18,8 +18,8 @@ India publishes dengue outbreak information every week through the Integrated Di
 | 2 | Requirements & system design | Done |
 | 3 | Project setup | Done |
 | 4 | Data acquisition & cleaning | Done |
-| 5 | Database implementation | Next |
-| 6 | Weather data integration | Planned |
+| 5 | Database implementation | Done |
+| 6 | Weather data integration | Next |
 | 7 | AI/ML early-warning model | Planned |
 | 8 | Flask REST API | Planned |
 | 9 | Dashboard | Planned |
@@ -171,6 +171,27 @@ python scripts/run_ingestion.py --no-download   # re-parse PDFs already download
 | `dengue_rows_clean.csv` | Cleaned and matched rows with flags |
 | `dengue_outbreaks.csv` | **One row per outbreak** (main output) |
 | `unmatched_districts.csv` | District names still needing an alias |
+
+---
+
+## Database (Step 5)
+
+```bash
+python scripts/setup_database.py           # or double-click setup_database.bat
+python scripts/setup_database.py --reset   # drop and rebuild all tables
+```
+
+- **`database/schema.sql`** defines 11 tables with primary and foreign keys, UNIQUE and CHECK rules, 6 indexes and 3 views (`v_outbreaks`, `v_district_year`, `v_weather_weekly`). The design is in [`docs/diagrams/er_diagram.png`](docs/diagrams/er_diagram.png).
+- **`database/queries.sql`** holds 10 named analytical queries, using window functions (LAG, RANK), FILTER, percentiles and date-range joins. Run them from Python:
+
+  ```python
+  from denguewatch.db.queries import run_query
+  run_query("monthly_seasonality", state="Kerala")
+  run_query("outbreaks_by_district_year", district="Pune")
+  ```
+
+- **Loading is re-runnable.** Upserts on natural keys mean new reports are added without creating duplicates, and every load is logged in `pipeline_runs`.
+- **Current contents:** 36 states, 640 districts, 317 aliases, 891 reports, 2,224 outbreaks.
 
 ---
 
