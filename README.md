@@ -240,17 +240,17 @@ python scripts/train_model.py --predict-only   # refresh risk scores with the ac
 
 | Model | PR AUC | vs chance |
 |---|---|---|
-| **DengueWatch (LightGBM, all features)** | **0.169** | **10.0×** |
+| **DengueWatch (LightGBM, all features)** | **0.176** | **10.4×** |
 | Logistic regression | 0.165 | 9.8× |
 | LightGBM without weather | 0.138 | 8.2× |
 | Seasonal history rule | 0.118 | 7.0× |
-| LightGBM, weather only | 0.052 | 3.1× |
+| LightGBM, weather only | 0.053 | 3.1× |
 
 **Alert performance:**
 
-- **High alerts** cover 6% of district-weeks and catch 44.5% of outbreaks (7.4× chance).
-- **Medium + high alerts** catch 72.7% of outbreaks.
-- **Lead time:** 79% of outbreaks were flagged at least 2 weeks before they started.
+- **High alerts** cover 6% of district-weeks and catch 44.9% of outbreaks (7.4× chance).
+- **Medium + high alerts** catch 71.7% of outbreaks.
+- **Lead time:** 78% of outbreaks were flagged at least 2 weeks before they started.
 
 **What matters most:** the minimum temperature over the last 4 weeks is the strongest signal. Weather carries 56% of the model's influence. Each stored prediction includes its top 3 reasons (SHAP).
 
